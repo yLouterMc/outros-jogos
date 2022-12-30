@@ -87,7 +87,7 @@ Main:Textbox(
     "Coloque aqui o id do recurso",
     true,
     function(t)
-    workspace:FindFirstChild("SongEvent"):FireServer("Play", t)
+    workspace:FindFirstChild("SongEvent",true):FireServer("Play", t)
     end
 )
 
