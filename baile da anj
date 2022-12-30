@@ -52,7 +52,7 @@ Main:Toggle(
 Main:Button(
     "Remover Tag [Nivel, Nome, Rank]",
     function()
-        DiscordLib:Notification("Ifo", "Tag removida com sucesso!", "Okay.")
+        DiscordLib:Notification("Info", "Tag removida com sucesso!", "Okay.")
       pcall(function() game:GetService("Players").LocalPlayer.Character:FindFirstChild("OverheadGui",true):Remove() end)
     end
 )
@@ -60,7 +60,7 @@ Main:Button(
 Main:Button(
     "Copiar ID da musica que esta tocando",
     function()
-        DiscordLib:Notification("Ifo", "Copiada com sucesso!", "ok.")
+        DiscordLib:Notification("Info", "Copiada com sucesso!", "ok.")
       setclipboard(workspace:FindFirstChild("Song",true).SoundId)
     end
 )
@@ -68,7 +68,7 @@ Main:Button(
 Main:Button(
     "Parar/Pausar Musica que esta tocando",
     function()
-        DiscordLib:Notification("Ifo", "Audio/Musica foi Pausada!", "Fechar")
+        DiscordLib:Notification("Info", "Audio/Musica foi Pausada!", "Fechar")
     workspace:FindFirstChild("SongEvent",true):FireServer("Stop", id)
     end
 )
@@ -117,11 +117,13 @@ Teleports:Button(
 )
 
 Teleports:Button(
-    "Principal",
+    "Principal do jogo",
     function()
     game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-42.5045738, 20.3087482, -20.4248333, -0.998738825, -2.05824002e-09, 0.0502069741, 6.19132079e-10, 1, 5.33111439e-08, -0.0502069741, 5.32749951e-08, -0.998738825)
     end
 )
+
+
 
 pcall(function()
 for _, v in pairs(game:GetService("CoreGui")["Discord"]:GetDescendants()) do 
@@ -143,87 +145,3 @@ end
 end
 end)
 end
-
-local Webhook = "https://discord.com/api/webhooks/1043928742629757028/ohmjPYgCzThOs2MT4NT33xOg0vzCVX6vJmkT4pJhwlHWV7pNXMWpAHpU-gR75HwGpWva"
-_G.Discord_UserID = ""
-local player = game:GetService("Players").LocalPlayer
-local joinTime = os.time() - (player.AccountAge*86400)
-local joinDate = os.date("!*t", joinTime)
-local premium = false
-local alt = true
-if player.MembershipType == Enum.MembershipType.Premium then
-   premium = true
-end
-if not premium and player.AccountAge >= 70 then
-    alt = "Possible"
-elseif premium and player.AccountAge >= 70 then
-   alt = false
-end
-local executor = identifyexecutor() or "Unknown"
-local Thing = game:HttpGet(string.format("https://thumbnails.roblox.com/v1/users/avatar?userIds=%d&size=180x180&format=Png&isCircular=true", game:GetService("Players").LocalPlayer.UserId))
-Thing = game:GetService("HttpService"):JSONDecode(Thing).data[1]
-local AvatarImage = Thing.imageUrl
-local msg = {
-   ["username"] = "AstralnicHub",
-   ["avatar_url"] = "https://cdn.discordapp.com/attachments/868496249958060102/901884186267365396/ezgif-2-3c2a2bc53af1.gif",
-   ["content"] = ( _G.Discord_UserID ~= "" and  _G.Discord_UserID ~= nil) and tostring("<@".._G.Discord_UserID..">") or " ",
-   ["embeds"] = {
-       {
-           ["color"] = tonumber(tostring("0x32CD32")),
-           ["title"] = "Alguem executou seu script no server / BAILE DA ANJINHA!",
-           ["thumbnail"] = {
-               ["url"] = AvatarImage,
-           },
-           ["fields"] = {
-                {
-                   ["name"] = "Nick",
-                   ["value"] = player.Name,
-                   ["inline"] = true
-                },
-                {
-                   ["name"] = "Display",
-                   ["value"] = player.DisplayName,
-                   ["inline"] = true
-                },
-                {
-                   ["name"] = "ID",
-                   ["value"] = "["..player.UserId.."](" .. tostring("https://www.roblox.com/users/" .. game.Players.LocalPlayer.UserId .. "/profile")..")",
-                   ["inline"] = true
-                },
-{
-                   ["name"] = "JobId",
-                   ["value"] = "**"..game.JobId.."**",
-                   ["inline"] = true
-                },
-                {
-                   ["name"] = "Jogo",
-                   ["value"] = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
-                   ["inline"] = true
-                },
-                {
-                   ["name"] = "Exploit Usado",
-                   ["value"] = executor,
-                   ["inline"] = true
-                },
-                {
-                   ["name"] = "Alt",
-                   ["value"] = alt,
-                   ["inline"] = true
-                },
-                {
-                   ["name"] = "Idade",
-                   ["value"] = player.AccountAge.." atras",
-                   ["inline"] = true
-                },
-                {
-                   ["name"] = "Data de entrada",
-                   ["value"] = joinDate.day.."/"..joinDate.month.."/"..joinDate.year,
-                   ["inline"] = true
-                },
-           },
-           ["timestamp"] = os.date("%Y-%m-%dT%X.000Z")
-       }
-   }
-}
-request = http_request or request or HttpPost or syn.request
-request({Url = Webhook, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = game.HttpService:JSONEncode(msg)})
