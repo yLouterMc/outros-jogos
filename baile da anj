@@ -14,7 +14,9 @@ if _G.inter == false then
 _G.inter = true
 while wait() do 
 if _G.inter == false then break end
-pcall(function() workspace["Cadeira de ID"]["Model 3D"].VehicleSeat.Song.SongEvent:FireServer("Stop",id) end)
+pcall(function()
+workspace:FindFirstChild("SongEvent",true):FireServer("Stop",id) 
+end)
 end  
 else
 _G.inter = false
