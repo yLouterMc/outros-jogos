@@ -12,10 +12,11 @@ _G.mutar = false
 function inter() 
 if _G.inter == false then
 _G.inter = true
-while wait() do 
+while game:GetService("RunService").Heartbeat:Wait() do 
 if _G.inter == false then break end
 pcall(function()
 workspace:FindFirstChild("SongEvent",true):FireServer("Stop",id) 
+workspace:FindFirstChild("Song",true).Volume = 0
 end)
 end  
 else
@@ -52,7 +53,7 @@ Main:Toggle(
 Main:Button(
     "Remover Tag [Nivel, Nome, Rank]",
     function()
-        DiscordLib:Notification("Info", "Tag removida com sucesso!", "Okay.")
+      DiscordLib:Notification("Info", "Tag removida com sucesso!", "Okay.")
       pcall(function() game:GetService("Players").LocalPlayer.Character:FindFirstChild("OverheadGui",true):Remove() end)
     end
 )
