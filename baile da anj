@@ -1,7 +1,7 @@
 if workspace.StreamingEnabled == false then
 workspace.StreamingEnabled = true
 local DiscordLib = loadstring(game:HttpGet "https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/discord")()
-local win = DiscordLib:Window("Baile da Anjinha")
+local win = DiscordLib:Window("AstralnicHub")
 local serv = win:Server("Server", "")
 local Main = serv:Channel("Scripts")
 local Teleports = serv:Channel("Teleports")
@@ -16,7 +16,7 @@ while game:GetService("RunService").RenderStepped:Wait() do
 if _G.inter == false then break end
 pcall(function()
 workspace:FindFirstChild("SongEvent",true):FireServer("Stop",id) 
-workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", id)
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
 end)
 end  
 else
@@ -91,6 +91,7 @@ Main:Textbox(
     true,
     function(t)
     workspace:FindFirstChild("SongEvent",true):FireServer("Play", t)
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
     end
 )
 
