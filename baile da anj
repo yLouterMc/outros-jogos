@@ -12,11 +12,11 @@ _G.mutar = false
 function inter() 
 if _G.inter == false then
 _G.inter = true
-while game:GetService("RunService").Heartbeat:Wait() do 
+while game:GetService("RunService").RenderStepped:Wait() do 
 if _G.inter == false then break end
 pcall(function()
 workspace:FindFirstChild("SongEvent",true):FireServer("Stop",id) 
-workspace:FindFirstChild("Song",true).Volume = 0
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", id)
 end)
 end  
 else
