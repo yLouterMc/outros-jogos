@@ -96,6 +96,15 @@ Main:Textbox(
     end
 )
 
+ local drop = Main:Dropdown(
+    "Musicas abaixo para toca-lo",
+    {"9760961334", "9641554472", "9026916195", "8661858047", "10402207829","117241393910","10621505447","11724143644","9830173644","9417081158","11570105825","10415343103","10397937382","6491883020"},
+    function(bool)
+    workspace:FindFirstChild("SongEvent",true):FireServer("Play", bool)
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+    end
+)
+
 Main:Label("Script feito e desenvolvido por rnvge#1970")
 
 Teleports:Button(
