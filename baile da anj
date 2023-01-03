@@ -1,7 +1,6 @@
 if workspace.StreamingEnabled == false then
 workspace.StreamingEnabled = true
-loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
-local DiscordLib = loadstring(game:HttpGet "https://raw.githubusercontent.com/bloodball/-back-ups-for-libs/main/discord")()
+local DiscordLib = loadstring(game:HttpGet "https://raw.githubusercontent.com/yLouterMc/outros-jogos/main/Livraria")()
 local win = DiscordLib:Window("AstralnicHub")
 local serv = win:Server("Baile da Anjinha", "http://www.roblox.com/asset/?id=11983035641")
 
@@ -222,6 +221,13 @@ Misc:Button(
     end
 )
 
+Misc:Button(
+    "Carregar Infinite Yield",
+    function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end
+)
+
 
 Home:Label("-- [[ Discord ]] --")
 Home:Button(
@@ -255,24 +261,4 @@ Main:Button(
       setclipboard("https://discord.gg/MsmGxxZQYj")
     end
 )
-
-pcall(function()
-for _, v in pairs(game:GetService("CoreGui")["Discord"]:GetDescendants()) do 
-if v:IsA("TextLabel") and v.Name == "SettingsTitle" then
-v.Text = "CONFIGURACOES"
-end
-if v:IsA("TextLabel") and v.Name == "DiscordInfo" then
-v.Text = "Creditos ao criador do script."
-end
-if v:IsA("TextLabel") and v.Text == "My Account" then
-v.Text = "Minha conta"
-end
-if v:IsA("TextLabel") and v.Text == "MY ACCOUNT" then
-v.Text = "MINHA CONTA"
-end
-if v:IsA("TextLabel") and v.Text == "Edit" then
-v.Text = "Editar"
-end
-end
-end)
 end
