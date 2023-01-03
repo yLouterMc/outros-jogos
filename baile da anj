@@ -5,11 +5,23 @@ local DiscordLib = loadstring(game:HttpGet "https://raw.githubusercontent.com/bl
 local win = DiscordLib:Window("AstralnicHub")
 local serv = win:Server("Baile da Anjinha", "http://www.roblox.com/asset/?id=11983035641")
 
+local Home = serv:Channel("Inicio")
 local Main = serv:Channel("Scripts")
 local Teleports = serv:Channel("Teleports")
+local Misc = serv:Channel("Misc")
 
-_G.inter = false
-_G.mutar = false
+local dono = " rvnge#1970"
+
+Home:Label("Jogo: Baile da Anjinha")
+Home:Label("Jogador: "..game:GetService("Players").LocalPlayer.DisplayName.." | (@"..game:GetService("Players").LocalPlayer.Name..")")
+Home:Label("Este script funciona para os outros jogos")
+Home:Label("lixos que o recurso de scripts sao os mesmos,")
+Home:Label("como o baile da anjinha e o baile da jessi.")
+
+_G.inter = false;
+_G.mutar = false;
+_G.fmute = false;
+_G.fbaixo = false;
 
 function inter() 
 if _G.inter == false then
@@ -36,6 +48,37 @@ workspace:FindFirstChild("Song",true).Volume = 10
 end
 end
 
+function fmute()
+if _G.fmute == false then
+_G.fmute = true
+while wait(.10) do 
+if _G.fmute == false then break end
+workspace:FindFirstChild("Song",true).Volume = 0
+wait(.15)
+workspace:FindFirstChild("Song",true).Volume = .2
+wait(.15)
+workspace:FindFirstChild("Song",true).Volume = 0.5
+wait(.10)
+workspace:FindFirstChild("Song",true).Volume = 10
+end
+else
+_G.fmute = false
+end
+end
+
+function fbaixo()
+if _G.fbaixo == false then
+_G.fbaixo = true
+local connect 
+connect = game:GetService("RunService").Stepped:Connect(function()
+if _G.fbaixo == false then connect:Disconnect() end
+workspace:FindFirstChild("Song",true).Volume = 0.1
+end)
+else
+_G.fbaixo = false
+end
+end
+
 Main:Toggle(
     "Interromper a musica / Parar",
     false,
@@ -49,6 +92,22 @@ Main:Toggle(
     false,
     function(bool)
     mutar()
+    end
+)
+
+Main:Toggle(
+    "Crasha o audio/recurso que esta tocando",
+    false,
+    function(bool)
+    fmute()
+    end
+)
+
+Main:Toggle(
+    "Tocar audio em volume baixo",
+    false,
+    function(bool)
+    fbaixo()
     end
 )
 
@@ -97,16 +156,22 @@ Main:Textbox(
     end
 )
 
- local drop = Main:Dropdown(
-    "Musicas abaixo para toca-lo",
-    {"9760961334", "9641554472", "9026916195", "8661858047", "10402207829","117241393910","10621505447","11724143644","9830173644","9417081158","11570105825","10415343103","10397937382","6491883020"},
-    function(bool)
-    workspace:FindFirstChild("SongEvent",true):FireServer("Play", bool)
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+Teleports:Textbox(
+    "Teletransportar ate alguem!",
+    "Nome aqui curto/completo",
+    true,
+    function(t)
+  for i,v in pairs(game:GetService("Players"):GetChildren()) do
+				if (string.sub(string.lower(v.Name),1,string.len(t)))==string.lower(t) or (string.sub(string.lower(v.DisplayName),1,string.len(t)))==string.lower(t) then
+                if v.Name == game:GetService("Players").LocalPlayer.Name then
+                else
+				game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Part",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChildOfClass("Part",true).CFrame 
+				game:GetService("Players").LocalPlayer.Character:FindFirstChid("HumanoidRootPart",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChid("HumanoidRootPart",true).CFrame 
+				end
+			end
+		end
     end
 )
-
-Main:Label("Script feito e desenvolvido por rnvge#1970")
 
 Teleports:Button(
     "Campo do jogo",
@@ -136,7 +201,60 @@ Teleports:Button(
     end
 )
 
+Misc:Button(
+    "Respawn Character R15/R6",
+    function()
+       pcall(function()
+        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = 0 
+		local antigo = game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame
+		local eu = game:GetService("Players").LocalPlayer
+		local dentro = eu.Character
+		if dentro:FindFirstChildOfClass("Humanoid") then dentro:FindFirstChildOfClass("Humanoid"):ChangeState(15) end
+		dentro:ClearAllChildren()
+		local ndentro = Instance.new("Model", workspace)
+		eu.Character = ndentro
+		eu.Character = dentro
+		ndentro:Destroy()
+        game:GetService("Players").LocalPlayer.CharacterAdded:Wait()
+        wait(.1)
+		eu.Character.HumanoidRootPart.CFrame = antigo 
+	end)
+    end
+)
 
+
+Home:Label("-- [[ Discord ]] --")
+Home:Button(
+    "Copiar link do servidor do Discord",
+    function()
+        DiscordLib:Notification("AstralnicHub", "Link foi copiado para sua clipboard!", "ok.")
+      setclipboard("https://discord.gg/MsmGxxZQYj")
+    end
+)
+Misc:Label("-- [[ Discord ]] --")
+Misc:Button(
+    "Copiar link do servidor do Discord",
+    function()
+        DiscordLib:Notification("AstralnicHub", "Link foi copiado para sua clipboard!", "ok.")
+      setclipboard("https://discord.gg/MsmGxxZQYj")
+    end
+)
+Teleports:Label("-- [[ Discord ]] --")
+Teleports:Button(
+    "Copiar link do servidor do Discord",
+    function()
+        DiscordLib:Notification("AstralnicHub", "Link foi copiado para sua clipboard!", "ok.")
+      setclipboard("https://discord.gg/MsmGxxZQYj")
+    end
+)
+Main:Label("-- [[ Discord ]] --")
+Main:Button(
+    "Copiar link do servidor do Discord",
+    function()
+        DiscordLib:Notification("AstralnicHub", "Link foi copiado para sua clipboard!", "ok.")
+      setclipboard("https://discord.gg/MsmGxxZQYj")
+    end
+)
 
 pcall(function()
 for _, v in pairs(game:GetService("CoreGui")["Discord"]:GetDescendants()) do 
