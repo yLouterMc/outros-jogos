@@ -52,13 +52,13 @@ if _G.fmute == false then
 _G.fmute = true
 while wait(.10) do 
 if _G.fmute == false then break end
-workspace:FindFirstChild("Song",true).Volume = 0
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
 wait(.15)
-workspace:FindFirstChild("Song",true).Volume = .2
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", .2)
 wait(.15)
-workspace:FindFirstChild("Song",true).Volume = 0.5
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0.5)
 wait(.10)
-workspace:FindFirstChild("Song",true).Volume = 10
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
 end
 else
 _G.fmute = false
