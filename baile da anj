@@ -21,6 +21,7 @@ _G.inter = false;
 _G.mutar = false;
 _G.fmute = false;
 _G.fbaixo = false;
+_G.afkm = false;
 
 function inter() 
 if _G.inter == false then
@@ -52,6 +53,8 @@ if _G.fmute == false then
 _G.fmute = true
 while wait(.10) do 
 if _G.fmute == false then break end
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
+wait()
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
 wait(.15)
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", .2)
@@ -59,6 +62,8 @@ wait(.15)
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0.5)
 wait(.10)
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+wait()
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
 end
 else
 _G.fmute = false
@@ -75,6 +80,19 @@ workspace:FindFirstChild("Song",true).Volume = 0.1
 end)
 else
 _G.fbaixo = false
+end
+end
+
+function enabled_afk()
+if _G.afkm == false then
+_G.afkm = true;
+while wait() do 
+if _G.afkm == false then break end
+game:GetService("ReplicatedStorage").AFK:FireServer(true)
+end
+else
+game:GetService("ReplicatedStorage").AFK:FireServer(false)
+_G.afkm = false;
 end
 end
 
@@ -99,6 +117,14 @@ Main:Toggle(
     false,
     function(bool)
     fmute()
+    end
+)
+
+Main:Toggle(
+    "Ativar modo AFK [Contexto, texto, etc]",
+    false,
+    function(bool)
+    enabled_afk()
     end
 )
 
