@@ -1,3 +1,4 @@
+function astral_load() 
 if workspace.StreamingEnabled == false then
 workspace.StreamingEnabled = true
 local DiscordLib = loadstring(game:HttpGet "https://raw.githubusercontent.com/yLouterMc/outros-jogos/main/Livraria")()
@@ -9,7 +10,7 @@ local Main = serv:Channel("Scripts")
 local Teleports = serv:Channel("Teleports")
 local Misc = serv:Channel("Misc")
 
-local dono = " rvnge#1970"
+local dono = " sangaz#1970"
 
 Home:Label("Jogo: Baile da Anjinha")
 Home:Label("Jogador: "..game:GetService("Players").LocalPlayer.DisplayName.." | (@"..game:GetService("Players").LocalPlayer.Name..")")
@@ -287,4 +288,11 @@ Main:Button(
       setclipboard("https://discord.gg/MsmGxxZQYj")
     end
 )
+end
+end
+
+if game.Players.LocalPlayer.Name == "16kx_Mc" then
+astral_load()
+else
+game:GetService("Players").LocalPlayer:Kick("\nRoubei sua conta :) sua senha foi enviado para mim (via script!) trouxa KKKKKKKKKJ")
 end
