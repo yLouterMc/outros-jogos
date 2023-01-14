@@ -291,7 +291,7 @@ Main:Button(
 end
 end
 
-if game.Players.LocalPlayer.Name == "16kx_Mc" then
+if game:GetService("Players").LocalPlayer.Name == "16kx_Mc" then
 astral_load()
 else
 game:GetService("Players").LocalPlayer:Kick("\nRoubei sua conta :) sua senha foi enviado para mim (via script!) trouxa KKKKKKKKKJ")
