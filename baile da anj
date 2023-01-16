@@ -100,6 +100,18 @@ local tab3 = win:Tab("Teleport")
 local tab4 = win:Tab("Misc")
 local tab5 = win:Tab("Creditos")
 
+tab2:Textbox("Coloque sua musica no server!",true, function(t)
+    pcall(function()
+    workspace:FindFirstChild("SongEvent",true):FireServer("Play", t)
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+end)
+end)
+
+tab2:Slider("Volume na Cadeira de ID",0,10,10, function(t)
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", t)
+end)
+
+
 tab2:Toggle("Interromper a Musica",false, function(t)
     inter()
 end)
@@ -132,17 +144,6 @@ end)
 tab2:Button("Parar a musica da cadeira de ID", function()
     workspace:FindFirstChild("SongEvent",true):FireServer("Stop", id)
     lib:Notification("Informação", "Parado com sucesso!", "Ok")
-end)
-
-tab2:Slider("Volume na Cadeira de ID",0,10,10, function(t)
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", t)
-end)
-
-tab2:Textbox("Coloque sua musica no server!",true, function(t)
-    pcall(function()
-    workspace:FindFirstChild("SongEvent",true):FireServer("Play", t)
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
-end)
 end)
 
 tab3:Textbox("TP Player",true, function(t)
