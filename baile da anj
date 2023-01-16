@@ -11,6 +11,7 @@ _G.inter = false;
 _G.mutar = false;
 _G.fmute = false;
 _G.fbaixo = false;
+_G.cocax = false
 _G.afkm = false;
 
 function inter() 
@@ -140,6 +141,45 @@ tab2:Button("Copiar ID da musica que esta tocando", function()
     setclipboard(workspace:FindFirstChild("Song",true).SoundId)
     lib:Notification("Informação", "ID foi copiado com sucesso!", "Ok")
 end)
+
+tab2:Button("Coca Cola Troll", function()
+pcall(function()
+		if _G.cocax == false then
+			_G.cocax = true 
+			local humanoid = game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid",true)
+			if game:GetService("Players").LocalPlayer.Character:FindFirstChild("Coca Cola") then
+				local tool = game:GetService("Players").LocalPlayer.Character["Coca Cola"]
+				humanoid:UnequipTools(tool)
+			end
+			if game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true) then
+				game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripRight = Vector3.new(0.019996,0,-0.9998)
+				game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripUp = Vector3.new(0.9996,0.02,0.019992)
+				game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripForward = Vector3.new(-0.0199988,0.9998,-0.000379769)
+				game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripPos = Vector3.new(1.7,0.5,-1)
+				if game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true) then
+					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).Parent = game:GetService("Players").LocalPlayer.Character
+				end
+			end	
+		else
+			if _G.cocax == true then
+				_G.cocax = false
+				if game:GetService("Players").LocalPlayer.Character:FindFirstChild("Coca Cola",true) then
+					game:GetService("Players").LocalPlayer.Character["Coca Cola"].Parent = game:GetService("Players").LocalPlayer:FindFirstChildOfClass("Backpack")
+				end
+				if game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true) then
+					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripRight = Vector3.new(0.216986,0,-0.976175)
+					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripUp = Vector3.new(0,1,0)
+					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripForward = Vector3.new(-0.976175,-0,-0.216986)
+					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripPos = Vector3.new(0.1,-0.521498,-0.0332914)
+					if game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true) then
+					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).Parent = game:GetService("Players").LocalPlayer.Character
+					end
+				end
+			end
+		end
+	end)
+end)
+
 
 tab2:Button("Parar a musica da cadeira de ID", function()
     workspace:FindFirstChild("SongEvent",true):FireServer("Stop", id)
