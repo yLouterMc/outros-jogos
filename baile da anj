@@ -1,22 +1,11 @@
-function astral_load() 
+function load_astral()
 if workspace.StreamingEnabled == false then
 workspace.StreamingEnabled = true
-local DiscordLib = loadstring(game:HttpGet "https://raw.githubusercontent.com/yLouterMc/outros-jogos/main/Livraria")()
-local win = DiscordLib:Window("AstralnicHub")
-local serv = win:Server("Baile da Anjinha", "http://www.roblox.com/asset/?id=11983035641")
+loadstring(game:HttpGet("https://hastebin.com/raw/itovebobic.apache"))()
+local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/yLouterMc/RagdollEngine/main/Livraria"))()
+local win = lib:Window("AstralnicHub",Color3.fromRGB(255, 85, 0))
 
-local Home = serv:Channel("Inicio")
-local Main = serv:Channel("Scripts")
-local Teleports = serv:Channel("Teleports")
-local Misc = serv:Channel("Misc")
-
-local dono = " sangaz#1970"
-
-Home:Label("Jogo: Baile da Anjinha")
-Home:Label("Jogador: "..game:GetService("Players").LocalPlayer.DisplayName.." | (@"..game:GetService("Players").LocalPlayer.Name..")")
-Home:Label("Este script funciona para os outros jogos")
-Home:Label("lixos que o recurso de scripts sao os mesmos,")
-Home:Label("como o baile da anjinha e o baile da jessi.")
+local tab1 = win:Tab("Inicio")
 
 _G.inter = false;
 _G.mutar = false;
@@ -26,7 +15,7 @@ _G.afkm = false;
 
 function inter() 
 if _G.inter == false then
-_G.inter = true
+_G.inter = true;
 while game:GetService("RunService").RenderStepped:Wait() do 
 if _G.inter == false then break end
 pcall(function()
@@ -35,264 +24,286 @@ workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
 end)
 end  
 else
-_G.inter = false
+_G.inter = false;
 end
 end
 
 function mutar()
-if _G.mutar == false then 
-_G.mutar = true
-workspace:FindFirstChild("Song",true).Volume = 0
-else
-_G.mutar = false
-workspace:FindFirstChild("Song",true).Volume = 10
-end
-end
+    if _G.mutar == false then 
+    _G.mutar = true
+    workspace:FindFirstChild("Song",true).Volume = 0
+    else
+    _G.mutar = false
+    workspace:FindFirstChild("Song",true).Volume = 10
+    end
+ end
 
-function fmute()
-if _G.fmute == false then
-_G.fmute = true
-while wait(.10) do 
-if _G.fmute == false then break end
-workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
-wait()
-workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
-wait(.15)
-workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", .2)
-wait(.15)
-workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0.5)
-wait(.10)
-workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
-wait()
-workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
-end
-else
-_G.fmute = false
-end
-end
+ function fmute()
+    if _G.fmute == false then
+    _G.fmute = true
+    while wait(.10) do 
+    if _G.fmute == false then break end
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
+    wait()
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+    wait(.15)
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", .2)
+    wait(.15)
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0.5)
+    wait(.10)
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+    wait()
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
+    end
+    else
+    _G.fmute = false
+    end
+    end
 
-function fbaixo()
-if _G.fbaixo == false then
-_G.fbaixo = true
-local connect 
-connect = game:GetService("RunService").Stepped:Connect(function()
-if _G.fbaixo == false then connect:Disconnect() end
-workspace:FindFirstChild("Song",true).Volume = 0.1
+    function fbaixo()
+        if _G.fbaixo == false then
+        _G.fbaixo = true
+        local connect 
+        connect = game:GetService("RunService").Stepped:Connect(function()
+        if _G.fbaixo == false then connect:Disconnect() end
+        workspace:FindFirstChild("Song",true).Volume = 0.1
+        end)
+        else
+        _G.fbaixo = false
+        end
+    end
+
+    function enabled_afk()
+        if _G.afkm == false then
+        _G.afkm = true;
+        while wait() do 
+        if _G.afkm == false then break end
+        game:GetService("ReplicatedStorage").AFK:FireServer(true)
+        end
+        else
+        game:GetService("ReplicatedStorage").AFK:FireServer(false)
+        _G.afkm = false;
+        end
+     end
+
+tab1:Label("Aperte X para ocultar/abrir o Hub")
+tab1:Label("Jogo: Baile da Anjinha")
+tab1:Label("Jogador: "..game:GetService("Players").LocalPlayer.DisplayName.." | (@"..game:GetService("Players").LocalPlayer.Name..")")
+CarregarFPS()
+tab1:Button("Convite para o Discord", function()
+    lib:Notification("Discord", "Link do discord foi copiado com sucesso!", "Ok")
+setclipboard("https://discord.gg/MsmGxxZQYj")
 end)
-else
-_G.fbaixo = false
-end
-end
 
-function enabled_afk()
-if _G.afkm == false then
-_G.afkm = true;
-while wait() do 
-if _G.afkm == false then break end
-game:GetService("ReplicatedStorage").AFK:FireServer(true)
-end
-else
-game:GetService("ReplicatedStorage").AFK:FireServer(false)
-_G.afkm = false;
-end
-end
+local tab2 = win:Tab("Scripts")
+local tab3 = win:Tab("Teleport")
+local tab4 = win:Tab("Misc")
+local tab5 = win:Tab("Creditos")
 
-Main:Toggle(
-    "Interromper a musica / Parar",
-    false,
-    function(bool)
+tab2:Toggle("Interromper a Musica",false, function(t)
     inter()
-    end
-)
+end)
 
-Main:Toggle(
-    "Mutar audios/musicas da cadeira de ID",
-    false,
-    function(bool)
+tab2:Toggle("Mutar a Musica",false, function(t)
     mutar()
-    end
-)
+end)
 
-Main:Toggle(
-    "Crasha o audio/recurso que esta tocando",
-    false,
-    function(bool)
+tab2:Toggle("Travar a Musica",false, function(t)
     fmute()
-    end
-)
+end)
 
-Main:Toggle(
-    "Ativar modo AFK [Contexto, texto, etc]",
-    false,
-    function(bool)
-    enabled_afk()
-    end
-)
-
-Main:Toggle(
-    "Tocar audio em volume baixo",
-    false,
-    function(bool)
+tab2:Toggle("Tocar a Musica Baixo",false, function(t)
     fbaixo()
-    end
-)
+end)
 
-Main:Button(
-    "Remover Tag [Nivel, Nome, Rank]",
-    function()
-      DiscordLib:Notification("Info", "Tag removida com sucesso!", "Okay.")
-      pcall(function() game:GetService("Players").LocalPlayer.Character:FindFirstChild("OverheadGui",true):Remove() end)
-    end
-)
+tab2:Toggle("Ativar AFK (Contexto, Tag)",false, function(t)
+    enabled_afk()
+end)
 
-Main:Button(
-    "Copiar ID da musica que esta tocando",
-    function()
-        DiscordLib:Notification("Info", "Copiada com sucesso!", "ok.")
-      setclipboard(workspace:FindFirstChild("Song",true).SoundId)
-    end
-)
+tab2:Button("Remover Tag [Nivel, Nome, Rank]", function()
+    pcall(function() game:GetService("Players").LocalPlayer.Character:FindFirstChild("OverheadGui",true):Remove() end)
+end)
 
-Main:Button(
-    "Parar/Pausar Musica que esta tocando",
-    function()
-        DiscordLib:Notification("Info", "Audio/Musica foi Pausada!", "Fechar")
+tab2:Button("Copiar ID da musica que esta tocando", function()
+    setclipboard(workspace:FindFirstChild("Song",true).SoundId)
+    lib:Notification("Informação", "ID foi copiado com sucesso!", "Ok")
+end)
+
+tab2:Button("Parar a musica da cadeira de ID", function()
     workspace:FindFirstChild("SongEvent",true):FireServer("Stop", id)
-    end
-)
+    lib:Notification("Informação", "Parado com sucesso!", "Ok")
+end)
 
-local sldr =
-    Main:Slider(
-    "Volume na Cadeira de ID",
-    0,
-    10,
-    10,
-    function(t)
-     workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", t)
-    end
-)
+tab2:Slider("Volume na Cadeira de ID",0,10,10, function(t)
+    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", t)
+end)
 
-Main:Textbox(
-    "Coloque sua musica no server!",
-    "Coloque aqui o id do recurso",
-    true,
-    function(t)
+tab2:Textbox("Coloque sua musica no server!",true, function(t)
+    pcall(function()
     workspace:FindFirstChild("SongEvent",true):FireServer("Play", t)
     workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
-    end
-)
+end)
+end)
 
-Teleports:Textbox(
-    "Teletransportar ate alguem!",
-    "Nome aqui curto/completo",
-    true,
-    function(t)
-  for i,v in pairs(game:GetService("Players"):GetChildren()) do
-				if (string.sub(string.lower(v.Name),1,string.len(t)))==string.lower(t) or (string.sub(string.lower(v.DisplayName),1,string.len(t)))==string.lower(t) then
-                if v.Name == game:GetService("Players").LocalPlayer.Name then
-                else
-				game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Part",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChildOfClass("Part",true).CFrame 
-				game:GetService("Players").LocalPlayer.Character:FindFirstChid("HumanoidRootPart",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChid("HumanoidRootPart",true).CFrame 
+tab3:Textbox("TP Player",true, function(t)
+    for i,v in pairs(game:GetService("Players"):GetChildren()) do
+        if (string.sub(string.lower(v.Name),1,string.len(t)))==string.lower(t) or (string.sub(string.lower(v.DisplayName),1,string.len(t)))==string.lower(t) then
+        if v.Name == game:GetService("Players").LocalPlayer.Name then
+        else
+        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Part",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChildOfClass("Part",true).CFrame 
+        game:GetService("Players").LocalPlayer.Character:FindFirstChid("HumanoidRootPart",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChid("HumanoidRootPart",true).CFrame 
+        end
+    end
+end
+end)
+
+tab3:Button("Campo do jogo", function()
+    pcall(function()
+      game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-230.667007, 35.677536, -30.3298931, -0.999995947, 5.37080282e-08, 0.00285283476, 5.39232232e-08, 1, 7.53548122e-08, -0.00285283476, 7.55083391e-08, -0.999995947)
+end)
+end)
+
+tab3:Button("Parque do jogo", function()
+    pcall(function()
+        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(147.417603, 55.7723351, -34.2757111, -0.0645508543, -2.54070027e-08, -0.997914433, 9.63266089e-08, 1, -3.16910622e-08, 0.997914433, -9.81713981e-08, -0.0645508543)
+    end)
+end)
+
+tab3:Button("Entrada do jogo", function()
+    pcall(function()
+        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-42.4482117, 15.2570038, -180.934723, -0.999814153, 2.61912732e-08, 0.01927769, 2.45713672e-08, 1, -8.42670289e-08, -0.01927769, -8.37776923e-08, -0.999814153)
+    end)
+end)
+
+tab3:Button("Principal do jogo", function()
+    pcall(function()
+        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-42.5045738, 20.3087482, -20.4248333, -0.998738825, -2.05824002e-09, 0.0502069741, 6.19132079e-10, 1, 5.33111439e-08, -0.0502069741, 5.32749951e-08, -0.998738825)
+    end)
+end)
+
+tab4:Button("Carregar Infinite Yield", function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+    end)
+end)
+
+FLYING = false
+iyflyspeed = 2
+local Players = game:GetService("Players")
+local Mouse = Players.LocalPlayer:GetMouse()
+local function sFLY()
+		if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+        local parte = Players.LocalPlayer.Character.HumanoidRootPart or Players.LocalPlayer.Character:FindFirstChildOfClass("Part")
+		local T = parte
+		local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+		local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+		local SPEED = 1
+		local function FLY()
+			FLYING = true
+			local BG = Instance.new("BodyGyro")
+			local BV = Instance.new("BodyVelocity")
+			BG.P = 9e4
+			BG.Parent = T
+			BV.Parent = T
+			BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+			BG.cframe = T.CFrame
+			BV.velocity = Vector3.new(0, 0, 0)
+			BV.maxForce = Vector3.new(9e9, 9e9, 9e9)
+				repeat wait()
+					if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+						Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = true
+					end
+					if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+						SPEED = 50
+					elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+						SPEED = 0
+					end
+					if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+						BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+						lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
+					elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
+						BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+					else
+						BV.velocity = Vector3.new(0, 0, 0)
+					end
+					BG.cframe = workspace.CurrentCamera.CoordinateFrame
+				until not FLYING
+				CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+				lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+				SPEED = 0
+				BG:Destroy()
+				BV:Destroy()
+				if Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+					Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
 				end
-			end
 		end
-    end
-)
-
-Teleports:Button(
-    "Campo do jogo",
-    function()
-    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-230.667007, 35.677536, -30.3298931, -0.999995947, 5.37080282e-08, 0.00285283476, 5.39232232e-08, 1, 7.53548122e-08, -0.00285283476, 7.55083391e-08, -0.999995947)
-    end
-)
-
-Teleports:Button(
-    "Parque do jogo",
-    function()
-    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(147.417603, 55.7723351, -34.2757111, -0.0645508543, -2.54070027e-08, -0.997914433, 9.63266089e-08, 1, -3.16910622e-08, 0.997914433, -9.81713981e-08, -0.0645508543)
-    end
-)
-
-Teleports:Button(
-    "Entrada do jogo",
-    function()
-    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-42.4482117, 15.2570038, -180.934723, -0.999814153, 2.61912732e-08, 0.01927769, 2.45713672e-08, 1, -8.42670289e-08, -0.01927769, -8.37776923e-08, -0.999814153)
-    end
-)
-
-Teleports:Button(
-    "Principal do jogo",
-    function()
-    game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-42.5045738, 20.3087482, -20.4248333, -0.998738825, -2.05824002e-09, 0.0502069741, 6.19132079e-10, 1, 5.33111439e-08, -0.0502069741, 5.32749951e-08, -0.998738825)
-    end
-)
-
-Misc:Button(
-    "Respawn Character R15/R6",
-    function()
-       pcall(function()
-        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = 0 
-		local antigo = game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame
-		local eu = game:GetService("Players").LocalPlayer
-		local dentro = eu.Character
-		if dentro:FindFirstChildOfClass("Humanoid") then dentro:FindFirstChildOfClass("Humanoid"):ChangeState(15) end
-		dentro:ClearAllChildren()
-		local ndentro = Instance.new("Model", workspace)
-		eu.Character = ndentro
-		eu.Character = dentro
-		ndentro:Destroy()
-        game:GetService("Players").LocalPlayer.CharacterAdded:Wait()
-        wait(.1)
-		eu.Character.HumanoidRootPart.CFrame = antigo 
-	end)
-    end
-)
-
-Misc:Button(
-    "Carregar Infinite Yield",
-    function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
-    end
-)
-
-
-Home:Label("-- [[ Discord ]] --")
-Home:Button(
-    "Copiar link do servidor do Discord",
-    function()
-        DiscordLib:Notification("AstralnicHub", "Link foi copiado para sua clipboard!", "ok.")
-      setclipboard("https://discord.gg/MsmGxxZQYj")
-    end
-)
-Misc:Label("-- [[ Discord ]] --")
-Misc:Button(
-    "Copiar link do servidor do Discord",
-    function()
-        DiscordLib:Notification("AstralnicHub", "Link foi copiado para sua clipboard!", "ok.")
-      setclipboard("https://discord.gg/MsmGxxZQYj")
-    end
-)
-Teleports:Label("-- [[ Discord ]] --")
-Teleports:Button(
-    "Copiar link do servidor do Discord",
-    function()
-        DiscordLib:Notification("AstralnicHub", "Link foi copiado para sua clipboard!", "ok.")
-      setclipboard("https://discord.gg/MsmGxxZQYj")
-    end
-)
-Main:Label("-- [[ Discord ]] --")
-Main:Button(
-    "Copiar link do servidor do Discord",
-    function()
-        DiscordLib:Notification("AstralnicHub", "Link foi copiado para sua clipboard!", "ok.")
-      setclipboard("https://discord.gg/MsmGxxZQYj")
-    end
-)
-end
+		flyKeyDown = Mouse.KeyDown:Connect(function(KEY)
+			if KEY:lower() == "w" then
+				CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
+			elseif KEY:lower() == "s" then
+				CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
+			elseif KEY:lower() == "a" then
+				CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
+			elseif KEY:lower() == "d" then 
+				CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
+			elseif QEfly and KEY:lower() == "e" then
+				CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
+			elseif QEfly and KEY:lower() == "q" then
+				CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
+			end
+			pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+		end)
+		flyKeyUp = Mouse.KeyUp:Connect(function(KEY)
+			if KEY:lower() == "w" then
+				CONTROL.F = 0
+			elseif KEY:lower() == "s" then
+				CONTROL.B = 0
+			elseif KEY:lower() == "a" then
+				CONTROL.L = 0
+			elseif KEY:lower() == "d" then
+				CONTROL.R = 0
+			elseif KEY:lower() == "e" then
+				CONTROL.Q = 0
+			elseif KEY:lower() == "q" then
+				CONTROL.E = 0
+			end
+		end)
+		FLY()
 end
 
-if game:GetService("Players").LocalPlayer.Name == "16kx_Mc" then
-astral_load()
+tab4:Bind("Toggle Voar/Parar",Enum.KeyCode.F1, function()
+if FLYING == true then
+FLYING = false 
 else
-game:GetService("Players").LocalPlayer:Kick("\nRoubei sua conta :) sua senha foi enviado para mim (via script!) trouxa KKKKKKKKKJ")
+FLYING = true
+sFLY()
+game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Died:Connect(function()
+FLYING = false 
+end)
+end
+end)
+
+tab4:Slider("FlyVelocidade",0,1000,2, function(t)
+	iyflyspeed = t
+end)
+
+tab4:Colorpicker("Mudar UI Color",Color3.fromRGB(255, 85, 0), function(t)
+	lib:ChangePresetColor(Color3.fromRGB(t.R * 255, t.G * 255, t.B * 255))
+end)
+
+tab5:Label("Clique abaixo para ver")
+
+tab5:Button("Oriented                 (rvnge#1970)", function()
+    lib:Notification("Oriented", "Scripting, UI design, original idea", "Legal!")
+end)
+end
+end
+
+local lista = {"mimi99853","16kx_Mc","Elias12725","ii_50x50"}
+local plr = game:GetService("Players").LocalPlayer;
+
+if table.find(lista, plr.Name) then
+load_astral()
+else
+plr:Kick('Trouxa perdeu a conta KKKKKKKKK!')
 end
