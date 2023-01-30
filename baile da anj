@@ -1,5 +1,33 @@
+--[[
+
+
+
+COPIA NÃO COMÉDIA SCRIPT FEITO POR 16KX_MC
+
+ZOAS PODE COPIAR SIM
+
+ATÉ OS DONOS DO BAILE DA ANJINHA NAO SABEM PROTEGER SEUS SCRIPTS KKKKKKKKKKKK
+
+FREE MODELS 100% PRÇ
+
+FEITO TUDINHO POR MIM CLR 
+
+USE PARA INCOMODAR OS WEB MANDRAKINHOS 
+
+LEMBRANDO QUE O SCRIPT FUNCIONA EM TODOS OS JOGOS COM  A CADEIRA DE ID (LEMBRANDO QUE TEM QUE SER O MESMO RECURSO DE SCRIPT!)
+
+
+BOA SORTE!
+
+
+
+
+
+]]
+
+
 function load_astral()
-if workspace.StreamingEnabled == false then
+if workspace.StreamingEnabled == true then
 workspace.StreamingEnabled = true
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/yLouterMc/RagdollEngine/main/Livraria"))()
 local win = lib:Window("AstralnicHub",Color3.fromRGB(255, 85, 0))
@@ -29,69 +57,69 @@ end
 end
 
 function mutar()
-    if _G.mutar == false then 
-    _G.mutar = true
-    workspace:FindFirstChild("Song",true).Volume = 0
-    else
-    _G.mutar = false
-    workspace:FindFirstChild("Song",true).Volume = 10
-    end
- end
+if _G.mutar == false then 
+_G.mutar = true
+workspace:FindFirstChild("Song",true).Volume = 0
+else
+_G.mutar = false
+workspace:FindFirstChild("Song",true).Volume = 10
+end
+end
 
- function fmute()
-    if _G.fmute == false then
-    _G.fmute = true
-    while wait(.10) do 
-    if _G.fmute == false then break end
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
-    wait()
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
-    wait(.15)
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", .2)
-    wait(.15)
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0.5)
-    wait(.10)
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
-    wait()
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
-    end
-    else
-    _G.fmute = false
-    end
-    end
+function fmute()
+if _G.fmute == false then
+_G.fmute = true
+while wait(.10) do 
+if _G.fmute == false then break end
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
+wait()
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+wait(.15)
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", .2)
+wait(.15)
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0.5)
+wait(.10)
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+wait()
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
+end
+else
+_G.fmute = false
+end
+end
 
-    function fbaixo()
-        if _G.fbaixo == false then
-        _G.fbaixo = true
-        local connect 
-        connect = game:GetService("RunService").Stepped:Connect(function()
-        if _G.fbaixo == false then connect:Disconnect() end
-        workspace:FindFirstChild("Song",true).Volume = 0.1
-        end)
-        else
-        _G.fbaixo = false
-        end
-    end
+function fbaixo()
+if _G.fbaixo == false then
+_G.fbaixo = true
+local connect 
+connect = game:GetService("RunService").Stepped:Connect(function()
+if _G.fbaixo == false then connect:Disconnect() end
+workspace:FindFirstChild("Song",true).Volume = 0.1
+end)
+else
+_G.fbaixo = false
+end
+end
 
-    function enabled_afk()
-        if _G.afkm == false then
-        _G.afkm = true;
-        while wait() do 
-        if _G.afkm == false then break end
-        game:GetService("ReplicatedStorage").AFK:FireServer(true)
-        end
-        else
-        game:GetService("ReplicatedStorage").AFK:FireServer(false)
-        _G.afkm = false;
-        end
-     end
+function enabled_afk()
+if _G.afkm == false then
+_G.afkm = true;
+while wait() do 
+if _G.afkm == false then break end
+game:GetService("ReplicatedStorage").AFK:FireServer(true)
+end
+else
+game:GetService("ReplicatedStorage").AFK:FireServer(false)
+_G.afkm = false;
+end
+end
 
 tab1:Label("Aperte X para ocultar/abrir o Hub")
 tab1:Label("Jogo: Baile da Anjinha")
 tab1:Label("Jogador: "..game:GetService("Players").LocalPlayer.DisplayName.." | (@"..game:GetService("Players").LocalPlayer.Name..")")
 CarregarFPS()
 tab1:Button("Convite para o Discord", function()
-    lib:Notification("Discord", "Link do discord foi copiado com sucesso!", "Ok")
+lib:Notification("Discord", "Link do discord foi copiado com sucesso!", "Ok")
 setclipboard("https://discord.gg/MsmGxxZQYj")
 end)
 
@@ -100,131 +128,103 @@ local tab3 = win:Tab("Teleport")
 local tab4 = win:Tab("Misc")
 local tab5 = win:Tab("Creditos")
 
+local musicas = {}
+
+function anterior(id)
+if not table.find(musicas, id) then
+table.remove(musicas, table.find(musicas, id))
+wait()
+table.insert(musicas, id)
+else
+table.remove(musicas, table.find(musicas, id))
+end
+end
+
+
 tab2:Textbox("Coloque sua musica no server!",true, function(t)
-    pcall(function()
-    workspace:FindFirstChild("SongEvent",true):FireServer("Play", t)
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
-end)
+if workspace:FindFirstChild("SongEvent", true) then
+workspace:FindFirstChild("SongEvent",true):FireServer("Play", t)
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+else
+lib:Notification("Mensagem", "Erro ao procurar cadeira de ID", "Ok.")
+end
+anterior(t)
 end)
 
 tab2:Slider("Volume na Cadeira de ID",0,10,10, function(t)
-    workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", t)
+if workspace:FindFirstChild("SongEvent", true) then
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", t)
+else
+lib:Notification("Mensagem", "Erro ao procurar cadeira de ID", "Ok.")
+end  
 end)
 
 
-tab2:Toggle("Interromper a Musica",false, function(t)
-    inter()
-end)
+tab2:Toggle("Interromper a Musica",false, function(t) inter() end)
 
-tab2:Toggle("Mutar a Musica",false, function(t)
-    mutar()
-end)
+tab2:Toggle("Mutar a Musica",false, function(t) mutar() end)
 
-tab2:Toggle("Travar a Musica",false, function(t)
-    fmute()
-end)
+tab2:Toggle("Travar a Musica",false, function(t) fmute() end)
 
-tab2:Toggle("Tocar a Musica Baixo",false, function(t)
-    fbaixo()
-end)
+tab2:Toggle("Tocar a Musica Baixo",false, function(t) fbaixo() end)
 
-tab2:Toggle("Ativar AFK (Contexto, Tag)",false, function(t)
-    enabled_afk()
-end)
+tab2:Toggle("Ativar AFK (Contexto, Tag)",false, function(t) enabled_afk() end)
 
 tab2:Button("Remover Tag [Nivel, Nome, Rank]", function()
-    pcall(function() game:GetService("Players").LocalPlayer.Character:FindFirstChild("OverheadGui",true):Remove() end)
+pcall(function() game:GetService("Players").LocalPlayer.Character:FindFirstChild("OverheadGui",true):Remove() end)
+end)
+
+tab2:Button("Tocar musica Anterior", function()
+for _,v in pairs(musicas) do  
+workspace:FindFirstChild("SongEvent",true):FireServer("Play", v)
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+end
 end)
 
 tab2:Button("Copiar ID da musica que esta tocando", function()
-    setclipboard(workspace:FindFirstChild("Song",true).SoundId)
-    lib:Notification("Informação", "ID foi copiado com sucesso!", "Ok")
+setclipboard(workspace:FindFirstChild("Song",true).SoundId)
+lib:Notification("Mensagem", "ID foi copiado com sucesso!", "Ok")
 end)
-
-tab2:Button("Coca Cola Troll", function()
-pcall(function()
-		if _G.cocax == false then
-			_G.cocax = true 
-			local humanoid = game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid",true)
-			if game:GetService("Players").LocalPlayer.Character:FindFirstChild("Coca Cola") then
-				local tool = game:GetService("Players").LocalPlayer.Character["Coca Cola"]
-				humanoid:UnequipTools(tool)
-			end
-			if game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true) then
-				game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripRight = Vector3.new(0.019996,0,-0.9998)
-				game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripUp = Vector3.new(0.9996,0.02,0.019992)
-				game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripForward = Vector3.new(-0.0199988,0.9998,-0.000379769)
-				game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripPos = Vector3.new(1.7,0.5,-1)
-				if game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true) then
-					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).Parent = game:GetService("Players").LocalPlayer.Character
-				end
-			end	
-		else
-			if _G.cocax == true then
-				_G.cocax = false
-				if game:GetService("Players").LocalPlayer.Character:FindFirstChild("Coca Cola",true) then
-					game:GetService("Players").LocalPlayer.Character["Coca Cola"].Parent = game:GetService("Players").LocalPlayer:FindFirstChildOfClass("Backpack")
-				end
-				if game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true) then
-					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripRight = Vector3.new(0.216986,0,-0.976175)
-					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripUp = Vector3.new(0,1,0)
-					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripForward = Vector3.new(-0.976175,-0,-0.216986)
-					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).GripPos = Vector3.new(0.1,-0.521498,-0.0332914)
-					if game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true) then
-					game:GetService("Players").LocalPlayer:FindFirstChild("Coca Cola",true).Parent = game:GetService("Players").LocalPlayer.Character
-					end
-				end
-			end
-		end
-	end)
-end)
-
 
 tab2:Button("Parar a musica da cadeira de ID", function()
-    workspace:FindFirstChild("SongEvent",true):FireServer("Stop", id)
-    lib:Notification("Informação", "Parado com sucesso!", "Ok")
+workspace:FindFirstChild("SongEvent",true):FireServer("Stop", id)
+lib:Notification("Informação", "Parado com sucesso!", "Ok")
 end)
 
 tab3:Textbox("TP Player",true, function(t)
-    for i,v in pairs(game:GetService("Players"):GetChildren()) do
-        if (string.sub(string.lower(v.Name),1,string.len(t)))==string.lower(t) or (string.sub(string.lower(v.DisplayName),1,string.len(t)))==string.lower(t) then
-        if v.Name == game:GetService("Players").LocalPlayer.Name then
-        else
-        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Part",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChildOfClass("Part",true).CFrame 
-        game:GetService("Players").LocalPlayer.Character:FindFirstChid("HumanoidRootPart",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChid("HumanoidRootPart",true).CFrame 
-        end
-    end
+for i,v in pairs(game:GetService("Players"):GetChildren()) do
+if (string.sub(string.lower(v.Name),1,string.len(t)))==string.lower(t) or (string.sub(string.lower(v.DisplayName),1,string.len(t)))==string.lower(t) then
+if v.Name == game:GetService("Players").LocalPlayer.Name then
+else
+game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Part",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChildOfClass("Part",true).CFrame 
+game:GetService("Players").LocalPlayer.Character:FindFirstChid("HumanoidRootPart",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChid("HumanoidRootPart",true).CFrame 
+end
+end
 end
 end)
 
 tab3:Button("Campo do jogo", function()
-    pcall(function()
-      game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-230.667007, 35.677536, -30.3298931, -0.999995947, 5.37080282e-08, 0.00285283476, 5.39232232e-08, 1, 7.53548122e-08, -0.00285283476, 7.55083391e-08, -0.999995947)
+pcall(function()
+game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-230.667007, 35.677536, -30.3298931, -0.999995947, 5.37080282e-08, 0.00285283476, 5.39232232e-08, 1, 7.53548122e-08, -0.00285283476, 7.55083391e-08, -0.999995947)
 end)
 end)
 
 tab3:Button("Parque do jogo", function()
-    pcall(function()
-        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(147.417603, 55.7723351, -34.2757111, -0.0645508543, -2.54070027e-08, -0.997914433, 9.63266089e-08, 1, -3.16910622e-08, 0.997914433, -9.81713981e-08, -0.0645508543)
-    end)
+pcall(function()
+game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(147.417603, 55.7723351, -34.2757111, -0.0645508543, -2.54070027e-08, -0.997914433, 9.63266089e-08, 1, -3.16910622e-08, 0.997914433, -9.81713981e-08, -0.0645508543)
+end)
 end)
 
 tab3:Button("Entrada do jogo", function()
-    pcall(function()
-        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-42.4482117, 15.2570038, -180.934723, -0.999814153, 2.61912732e-08, 0.01927769, 2.45713672e-08, 1, -8.42670289e-08, -0.01927769, -8.37776923e-08, -0.999814153)
-    end)
+pcall(function()
+game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-42.4482117, 15.2570038, -180.934723, -0.999814153, 2.61912732e-08, 0.01927769, 2.45713672e-08, 1, -8.42670289e-08, -0.01927769, -8.37776923e-08, -0.999814153)
 end)
-
-tab3:Button("Principal do jogo", function()
-    pcall(function()
-        game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(-42.5045738, 20.3087482, -20.4248333, -0.998738825, -2.05824002e-09, 0.0502069741, 6.19132079e-10, 1, 5.33111439e-08, -0.0502069741, 5.32749951e-08, -0.998738825)
-    end)
 end)
 
 tab4:Button("Carregar Infinite Yield", function()
-    pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
-    end)
+pcall(function()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+end)
 end)
 
 FLYING = false
@@ -232,83 +232,83 @@ iyflyspeed = 2
 local Players = game:GetService("Players")
 local Mouse = Players.LocalPlayer:GetMouse()
 local function sFLY()
-		if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
-        local parte = Players.LocalPlayer.Character.HumanoidRootPart or Players.LocalPlayer.Character:FindFirstChildOfClass("Part")
-		local T = parte
-		local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-		local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-		local SPEED = 1
-		local function FLY()
-			FLYING = true
-			local BG = Instance.new("BodyGyro")
-			local BV = Instance.new("BodyVelocity")
-			BG.P = 9e4
-			BG.Parent = T
-			BV.Parent = T
-			BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-			BG.cframe = T.CFrame
-			BV.velocity = Vector3.new(0, 0, 0)
-			BV.maxForce = Vector3.new(9e9, 9e9, 9e9)
-				repeat wait()
-					if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-						Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = true
-					end
-					if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
-						SPEED = 50
-					elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
-						SPEED = 0
-					end
-					if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
-						BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
-						lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
-					elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
-						BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
-					else
-						BV.velocity = Vector3.new(0, 0, 0)
-					end
-					BG.cframe = workspace.CurrentCamera.CoordinateFrame
-				until not FLYING
-				CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-				lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-				SPEED = 0
-				BG:Destroy()
-				BV:Destroy()
-				if Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
-					Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
-				end
-		end
-		flyKeyDown = Mouse.KeyDown:Connect(function(KEY)
-			if KEY:lower() == "w" then
-				CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
-			elseif KEY:lower() == "s" then
-				CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
-			elseif KEY:lower() == "a" then
-				CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
-			elseif KEY:lower() == "d" then 
-				CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
-			elseif QEfly and KEY:lower() == "e" then
-				CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
-			elseif QEfly and KEY:lower() == "q" then
-				CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
-			end
-			pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
-		end)
-		flyKeyUp = Mouse.KeyUp:Connect(function(KEY)
-			if KEY:lower() == "w" then
-				CONTROL.F = 0
-			elseif KEY:lower() == "s" then
-				CONTROL.B = 0
-			elseif KEY:lower() == "a" then
-				CONTROL.L = 0
-			elseif KEY:lower() == "d" then
-				CONTROL.R = 0
-			elseif KEY:lower() == "e" then
-				CONTROL.Q = 0
-			elseif KEY:lower() == "q" then
-				CONTROL.E = 0
-			end
-		end)
-		FLY()
+if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+local parte = Players.LocalPlayer.Character.HumanoidRootPart or Players.LocalPlayer.Character:FindFirstChildOfClass("Part")
+local T = parte
+local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+local SPEED = 1
+local function FLY()
+FLYING = true
+local BG = Instance.new("BodyGyro")
+local BV = Instance.new("BodyVelocity")
+BG.P = 9e4
+BG.Parent = T
+BV.Parent = T
+BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+BG.cframe = T.CFrame
+BV.velocity = Vector3.new(0, 0, 0)
+BV.maxForce = Vector3.new(9e9, 9e9, 9e9)
+repeat wait()
+if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = true
+end
+if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+SPEED = 50
+elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+SPEED = 0
+end
+if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
+elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
+BV.velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+else
+BV.velocity = Vector3.new(0, 0, 0)
+end
+BG.cframe = workspace.CurrentCamera.CoordinateFrame
+until not FLYING
+CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+SPEED = 0
+BG:Destroy()
+BV:Destroy()
+if Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = false
+end
+end
+flyKeyDown = Mouse.KeyDown:Connect(function(KEY)
+if KEY:lower() == "w" then
+CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
+elseif KEY:lower() == "s" then
+CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
+elseif KEY:lower() == "a" then
+CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
+elseif KEY:lower() == "d" then 
+CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
+elseif QEfly and KEY:lower() == "e" then
+CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
+elseif QEfly and KEY:lower() == "q" then
+CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
+end
+pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+end)
+flyKeyUp = Mouse.KeyUp:Connect(function(KEY)
+if KEY:lower() == "w" then
+CONTROL.F = 0
+elseif KEY:lower() == "s" then
+CONTROL.B = 0
+elseif KEY:lower() == "a" then
+CONTROL.L = 0
+elseif KEY:lower() == "d" then
+CONTROL.R = 0
+elseif KEY:lower() == "e" then
+CONTROL.Q = 0
+elseif KEY:lower() == "q" then
+CONTROL.E = 0
+end
+end)
+FLY()
 end
 
 tab4:Bind("Toggle Voar/Parar",Enum.KeyCode.F1, function()
@@ -324,17 +324,17 @@ end
 end)
 
 tab4:Slider("FlyVelocidade",0,1000,2, function(t)
-	iyflyspeed = t
+iyflyspeed = t
 end)
 
 tab4:Colorpicker("Mudar UI Color",Color3.fromRGB(255, 85, 0), function(t)
-	lib:ChangePresetColor(Color3.fromRGB(t.R * 255, t.G * 255, t.B * 255))
+lib:ChangePresetColor(Color3.fromRGB(t.R * 255, t.G * 255, t.B * 255))
 end)
 
 tab5:Label("Clique abaixo para ver")
 
 tab5:Button("Oriented                 (rvnge#1970)", function()
-    lib:Notification("Oriented", "Scripting, UI design, original idea", "Legal!")
+lib:Notification("Oriented", "Scripting, UI design, original idea", "Legal!")
 end)
 end
 end
