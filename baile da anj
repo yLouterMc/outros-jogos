@@ -339,11 +339,4 @@ end)
 end
 end
 
-local lista = {"mimi99853","16kx_Mc","Elias12725","ii_50x50"}
-local plr = game:GetService("Players").LocalPlayer;
-
-if table.find(lista, plr.Name) then
 load_astral()
-else
-plr:Kick('Trouxa perdeu a conta KKKKKKKKK!')
-end
