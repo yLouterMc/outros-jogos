@@ -96,7 +96,7 @@ connect = game:GetService("RunService").Stepped:Connect(function()
 if _G.fbaixo == false then connect:Disconnect() end
 workspace:FindFirstChild("Song",true).Volume = 0.1
 end)
-else;
+else
 _G.fbaixo = false;
 end;
 end;
