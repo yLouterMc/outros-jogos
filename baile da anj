@@ -38,7 +38,7 @@ _G.inter = false;
 _G.mutar = false;
 _G.fmute = false;
 _G.fbaixo = false;
-_G.cocax = false
+_G.cocax = false;
 _G.afkm = false;
 
 function inter() 
@@ -50,27 +50,27 @@ pcall(function()
 workspace:FindFirstChild("SongEvent",true):FireServer("Stop",id) 
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
 end)
-end  
+end;
 else
 _G.inter = false;
-end
-end
+end;
+end;
 
 function mutar()
 if _G.mutar == false then 
-_G.mutar = true
+_G.mutar = true;
 workspace:FindFirstChild("Song",true).Volume = 0
 else
-_G.mutar = false
+_G.mutar = false;
 workspace:FindFirstChild("Song",true).Volume = 10
-end
-end
+end;
+end;
 
 function fmute()
 if _G.fmute == false then
-_G.fmute = true
+_G.fmute = true;
 while wait(.10) do 
-if _G.fmute == false then break end
+if _G.fmute == false then break end;
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
 wait()
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
@@ -82,37 +82,37 @@ wait(.10)
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
 wait()
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 0)
-end
+end;
 else
-_G.fmute = false
-end
-end
+_G.fmute = false;
+end;
+end;
 
 function fbaixo()
 if _G.fbaixo == false then
-_G.fbaixo = true
+_G.fbaixo = true;
 local connect 
 connect = game:GetService("RunService").Stepped:Connect(function()
 if _G.fbaixo == false then connect:Disconnect() end
 workspace:FindFirstChild("Song",true).Volume = 0.1
 end)
-else
-_G.fbaixo = false
-end
-end
+else;
+_G.fbaixo = false;
+end;
+end;
 
 function enabled_afk()
 if _G.afkm == false then
 _G.afkm = true;
 while wait() do 
-if _G.afkm == false then break end
+if _G.afkm == false then break end;
 game:GetService("ReplicatedStorage").AFK:FireServer(true)
-end
+end;
 else
 game:GetService("ReplicatedStorage").AFK:FireServer(false)
 _G.afkm = false;
-end
-end
+end;
+end;
 
 tab1:Label("Aperte X para ocultar/abrir o Hub")
 tab1:Label("Jogo: Baile da Anjinha")
@@ -137,15 +137,15 @@ wait()
 table.insert(musicas, id)
 else
 table.remove(musicas, table.find(musicas, id))
-end
-end
+end;
+end;
 
 function tcar()
 for _,v in pairs(musicas) do  
 workspace:FindFirstChild("SongEvent",true):FireServer("Play", v)
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
-end
-end
+end;
+end;
 
 
 tab2:Textbox("Coloque sua musica no server!",true, function(t)
@@ -154,7 +154,7 @@ workspace:FindFirstChild("SongEvent",true):FireServer("Play", t)
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
 else
 lib:Notification("Mensagem", "Erro ao procurar cadeira de ID", "Ok.")
-end
+end;
 anterior(t)
 end)
 
@@ -163,7 +163,7 @@ if workspace:FindFirstChild("SongEvent", true) then
 workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", t)
 else
 lib:Notification("Mensagem", "Erro ao procurar cadeira de ID", "Ok.")
-end  
+end;
 end)
 
 tab2:Toggle("Interromper a Musica",false, function(t) inter() end)
@@ -201,9 +201,9 @@ if v.Name == game:GetService("Players").LocalPlayer.Name then
 else
 game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Part",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChildOfClass("Part",true).CFrame 
 game:GetService("Players").LocalPlayer.Character:FindFirstChid("HumanoidRootPart",true).CFrame=game:GetService("Players")[v.Name].Character:FindFirstChid("HumanoidRootPart",true).CFrame 
-end
-end
-end
+end;
+end;
+end;
 end)
 
 tab3:Button("Campo do jogo", function()
@@ -230,24 +230,24 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/
 end)
 end)
 
-FLYING = false
-iyflyspeed = 2
-local Players = game:GetService("Players")
-local Mouse = Players.LocalPlayer:GetMouse()
+FLYING=false;
+iyflyspeed=2
+local Players=game:GetService("Players")
+local Mouse=Players.LocalPlayer:GetMouse()
 local function sFLY()
 if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
 local parte = Players.LocalPlayer.Character.HumanoidRootPart or Players.LocalPlayer.Character:FindFirstChildOfClass("Part")
-local T = parte
+local T=parte
 local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
 local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-local SPEED = 1
+local SPEED=1
 local function FLY()
-FLYING = true
-local BG = Instance.new("BodyGyro")
-local BV = Instance.new("BodyVelocity")
-BG.P = 9e4
-BG.Parent = T
-BV.Parent = T
+FLYING=true;
+local BG=Instance.new("BodyGyro")
+local BV=Instance.new("BodyVelocity")
+BG.P=9e4
+BG.Parent=T
+BV.Parent=T
 BG.maxTorque = Vector3.new(9e9, 9e9, 9e9)
 BG.cframe = T.CFrame
 BV.velocity = Vector3.new(0, 0, 0)
@@ -271,9 +271,9 @@ BV.velocity = Vector3.new(0, 0, 0)
 end
 BG.cframe = workspace.CurrentCamera.CoordinateFrame
 until not FLYING
-CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-SPEED = 0
+CONTROL={F=0,B=0,L=0,R=0,Q=0,E=0}
+lCONTROL={F=0,B=0,L=0,R=0,Q=0,E=0}
+SPEED=0
 BG:Destroy()
 BV:Destroy()
 if Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
@@ -281,9 +281,9 @@ Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid").PlatformStand = 
 end
 end
 flyKeyDown = Mouse.KeyDown:Connect(function(KEY)
-if KEY:lower() == "w" then
-CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
-elseif KEY:lower() == "s" then
+if KEY:lower()=="w"then
+CONTROL.F=(vfly and vehicleflyspeed or iyflyspeed)
+elseif KEY:lower()=="s"then
 CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
 elseif KEY:lower() == "a" then
 CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
