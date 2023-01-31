@@ -140,6 +140,13 @@ table.remove(musicas, table.find(musicas, id))
 end
 end
 
+function tcar()
+for _,v in pairs(musicas) do  
+workspace:FindFirstChild("SongEvent",true):FireServer("Play", v)
+workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
+end
+end
+
 
 tab2:Textbox("Coloque sua musica no server!",true, function(t)
 if workspace:FindFirstChild("SongEvent", true) then
@@ -159,7 +166,6 @@ lib:Notification("Mensagem", "Erro ao procurar cadeira de ID", "Ok.")
 end  
 end)
 
-
 tab2:Toggle("Interromper a Musica",false, function(t) inter() end)
 
 tab2:Toggle("Mutar a Musica",false, function(t) mutar() end)
@@ -175,10 +181,7 @@ pcall(function() game:GetService("Players").LocalPlayer.Character:FindFirstChild
 end)
 
 tab2:Button("Tocar musica Anterior", function()
-for _,v in pairs(musicas) do  
-workspace:FindFirstChild("SongEvent",true):FireServer("Play", v)
-workspace:FindFirstChild("SongEvent",true):FireServer("SetVolume", 10)
-end
+tcar()
 end)
 
 tab2:Button("Copiar ID da musica que esta tocando", function()
@@ -325,6 +328,28 @@ end)
 
 tab4:Slider("FlyVelocidade",0,1000,2, function(t)
 iyflyspeed = t
+end)
+
+tab4:Bind("Cadeira de ID (Volume Baixo)",Enum.KeyCode.Home, function()
+pcall(function()
+workspace:FindFirstChild("SongEvent", true):FireServer("SetVolume", 0)
+end)
+end)
+
+tab4:Bind("Cadeira de ID (Volume Maximo)",Enum.KeyCode.End, function()
+pcall(function()
+workspace:FindFirstChild("SongEvent", true):FireServer("SetVolume", 10)
+end)
+end)
+
+tab4:Bind("Tocar musica Anterior",Enum.KeyCode.Insert, function()
+tcar()
+end)
+
+tab4:Bind("Parar de tocar a musica",Enum.KeyCode.PageUp, function()
+pcall(function()
+workspace:FindFirstChild("SongEvent", true):FireServer("Stop", k)
+end)
 end)
 
 tab4:Colorpicker("Mudar UI Color",Color3.fromRGB(255, 85, 0), function(t)
