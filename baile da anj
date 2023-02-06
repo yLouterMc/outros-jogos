@@ -27,7 +27,7 @@ BOA SORTE!
 
 
 function load_astral()
-if workspace.StreamingEnabled == true then
+if workspace.StreamingEnabled == false then
 workspace.StreamingEnabled = true
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/yLouterMc/RagdollEngine/main/Livraria"))()
 local win = lib:Window("AstralnicHub",Color3.fromRGB(255, 85, 0))
