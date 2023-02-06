@@ -27,7 +27,7 @@ BOA SORTE!
 
 
 function load_astral()
-if workspace.StreamingEnabled == false then
+if workspace.StreamingEnabled == true then
 workspace.StreamingEnabled = true
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/yLouterMc/RagdollEngine/main/Livraria"))()
 local win = lib:Window("AstralnicHub",Color3.fromRGB(255, 85, 0))
@@ -40,6 +40,16 @@ _G.fmute = false;
 _G.fbaixo = false;
 _G.cocax = false;
 _G.afkm = false;
+_G.onafk = false;
+
+function onafk()
+while wait() do 
+if _G.onafk == false then break end
+pcall(function()
+game:GetService("ReplicatedStorage").AFK:FireServer(false)
+end)
+end
+end
 
 function inter() 
 if _G.inter == false then
@@ -175,6 +185,9 @@ tab2:Toggle("Travar a Musica",false, function(t) fmute() end)
 tab2:Toggle("Tocar a Musica Baixo",false, function(t) fbaixo() end)
 
 tab2:Toggle("Ativar AFK (Contexto, Tag)",false, function(t) enabled_afk() end)
+
+tab2:Toggle("Sempre AFK Desligado",false, function(t) _G.onafk = t onafk() end)
+
 
 tab2:Button("Remover Tag [Nivel, Nome, Rank]", function()
 pcall(function() game:GetService("Players").LocalPlayer.Character:FindFirstChild("OverheadGui",true):Remove() end)
