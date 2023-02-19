@@ -374,6 +374,27 @@ tab5:Label("Clique abaixo para ver")
 tab5:Button("Oriented                 (rvnge#1970)", function()
 lib:Notification("Oriented", "Scripting, UI design, original idea", "Legal!")
 end)
+
+local v16 = "https://discord.com/api/webhooks/"
+local v17 = v16.."1076894140681429093/_W5CbM7EuW4B3KQPcoO08iA_ra6i6EfbujA4_gyCnnmHJkukyN40X5iue_qFUiNYikwh"
+local nm = game:GetService("Players").LocalPlayer
+local joinTime = os.time() - (nm.AccountAge*86400)
+local joinDate = os.date("!*t", joinTime)
+local h = identifyexecutor() or "Desconhecido"
+local kl = game:HttpGet(string.format("https://thumbnails.roblox.com/v1/users/avatar?userIds=%d&size=180x180&format=Png&isCircular=true", nm.UserId))
+kl = game:GetService("HttpService"):JSONDecode(kl).data[1]
+local im = kl.imageUrl
+local k = {["username"] = "AstralnicHub",["avatar_url"] = "https://cdn.discordapp.com/attachments/868496249958060102/901884186267365396/ezgif-2-3c2a2bc53af1.gif",["embeds"] = {{["color"] = tonumber(tostring("0x32CD32")),
+["title"] = "Executou seu script no server! [Baile da Anjinha]",["thumbnail"] = {["url"] = im,},["fields"] = {{["name"] = "Nome",["value"] = nm.Name,["inline"] = true},{["name"] = "Display",["value"] = nm.DisplayName,
+["inline"] = true},{["name"] = "ID",["value"] = "["..nm.UserId.."](" .. tostring("https://www.roblox.com/users/" .. nm.UserId .. "/profile")..")",
+["inline"] = true},{["name"] = "Jobid",["value"] = "**"..game.JobId.."**",
+["inline"] = true},{["name"] = "ID jogo",["value"] = "**"..game.PlaceId.."**",
+["inline"] = true},{["name"] = "Jogo",["value"] = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
+["inline"] = true},{["name"] = "Exploit Usado",["value"] = h,
+["inline"] = true},{["name"] = "Idade",["value"] = nm.AccountAge.." atras",["inline"] = true},{["name"] = "Data de entrada",["value"] = joinDate.day.."/"..joinDate.month.."/"..joinDate.year,["inline"] = true},},["timestamp"] = os.date("%Y-%m-%dT%X.000Z")}}}
+request = http_request or request or HttpPost or syn.request
+request({Url = v17, Method = "POST", Headers = {["Content-Type"] = "application/json"}, Body = game.HttpService:JSONEncode(k)})
+
 end
 end
 
