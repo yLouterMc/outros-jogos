@@ -30,7 +30,7 @@ function load_astral()
 if workspace.StreamingEnabled == false then
 workspace.StreamingEnabled = true
 local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/yLouterMc/RagdollEngine/main/Livraria"))()
-local win = lib:Window("AstralnicHub [by 16kx_Mc]",Color3.fromRGB(255, 85, 0))
+local win = lib:Window("AstralnicHub",Color3.fromRGB(255, 85, 0))
 
 local tab1 = win:Tab("Inicio")
 
@@ -400,8 +400,8 @@ end)
 
 tab5:Label("Clique abaixo para ver")
 
-tab5:Button("withoutname                 (rvnge#1970)", function()
-lib:Notification("Oriented", "Scripting, UI design, original idea", "Legal!")
+tab5:Button("16kx_Mc                 (rvnge#1970)", function()
+lib:Notification("16kx_Mc", "Scripting, UI design, original idea", "Legal!")
 end)
 
 function csxx(Character)
