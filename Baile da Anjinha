@@ -25,6 +25,12 @@ BOA SORTE!
 
 ]]--
 
+local m = "Apenas 16kx_Mc (@rvnge) pode usar este script"
+
+if game.Players.LocalPlayer.Name == "16kx_Mc" then
+else
+game.Players.LocalPlayer:Kick(m)
+end
 
 function load_astral()
 if workspace.StreamingEnabled == false then
@@ -33,7 +39,6 @@ local lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/yLouterMc
 local win = lib:Window("AstralnicHub",Color3.fromRGB(255, 85, 0))
 
 local tab1 = win:Tab("Inicio")
-
 
 _G.inter = false;
 _G.mutar = false;
@@ -132,7 +137,7 @@ CarregarFPS()
 
 local list = {}
 
-tab1:Button("Ver quem ta usando esse script", function()
+tab1:Button("Verificar Pessoas usando este script", function()
 	for i,v in pairs(list) do 
 		if not game:GetService("Players"):FindFirstChild(v) then
 			table.remove(list, table.find(list, v))
@@ -153,7 +158,7 @@ tab1:Button("Ver quem ta usando esse script", function()
 	if #list == 0 then 
 		lib:Notification("Info","Ninguem ta usando no server!", "Ok!")
 	else
-		lib:Notification("Players", table.concat(list), "Okay!")
+		lib:Notification("Pessoas usando", table.concat(list), "Fechar")
 	end
 end)
 
@@ -164,7 +169,7 @@ end)
 
 local tab2 = win:Tab("Scripts")
 local tab3 = win:Tab("Teleport")
-local tab4 = win:Tab("Misc")
+local tab4 = win:Tab("Outras")
 local tab5 = win:Tab("Creditos")
 
 local musicas = {}
@@ -236,7 +241,7 @@ workspace:FindFirstChild("SongEvent",true):FireServer("Stop", id)
 lib:Notification("Informação", "Parado com sucesso!", "Ok")
 end)
 
-tab3:Textbox("TP Player",true, function(t)
+tab3:Textbox("Ir ate alguem",true, function(t)
 for i,v in pairs(game:GetService("Players"):GetChildren()) do
 if (string.sub(string.lower(v.Name),1,string.len(t)))==string.lower(t) or (string.sub(string.lower(v.DisplayName),1,string.len(t)))==string.lower(t) then
 if v.Name == game:GetService("Players").LocalPlayer.Name then
@@ -246,6 +251,16 @@ game:GetService("Players").LocalPlayer.Character:FindFirstChid("HumanoidRootPart
 end;
 end;
 end;
+end)
+
+tab3:Button("Ir ate o dono do script", function()
+pcall(function()
+if workspace:FindFirstChild("16kx_Mc") then
+game:GetService("Players").LocalPlayer.Character.HumanoidRootPart.CFrame = workspace['16kx_Mc'].HumanoidRootPart.CFrame
+else
+lib:Notification("Mensagem", "Dono do script n ta no server", "Ok")
+end
+end)
 end)
 
 tab3:Button("Campo do jogo", function()
@@ -401,18 +416,18 @@ end)
 tab5:Label("Clique abaixo para ver")
 
 tab5:Button("16kx_Mc                 (rvnge#1970)", function()
-lib:Notification("16kx_Mc", "Scripting, UI design, original idea", "Legal!")
+lib:Notification("16kx_Mc", "Criador do SCRIPT", "Legal!")
 end)
 
-function csxx(Character)
+function FODASE(Character)
 	wait(.1)
 	if Character:FindFirstChild("HairAttachment",true) then
 		Character:FindFirstChild("HairAttachment",true):Remove()
 	end
 end
 
-csxx(game:GetService("Players").LocalPlayer.Character)
-game:GetService("Players").LocalPlayer.CharacterAdded:Connect(csxx)
+FODASE(game:GetService("Players").LocalPlayer.Character)
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(FODASE)
 
 local Pessoas = game:GetService("Players")
 
@@ -456,7 +471,6 @@ Icon = "rbxassetid://12588581152"
 })
 end
 end)
-
 
 local v16 = "https://discord.com/api/webhooks/"
 local v17 = v16.."1076894140681429093/_W5CbM7EuW4B3KQPcoO08iA_ra6i6EfbujA4_gyCnnmHJkukyN40X5iue_qFUiNYikwh"
