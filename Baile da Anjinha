@@ -25,12 +25,6 @@ BOA SORTE!
 
 ]]--
 
-local m = "Apenas 16kx_Mc (@rvnge) pode usar este script"
-
-if game.Players.LocalPlayer.Name == "16kx_Mc" then
-else
-game.Players.LocalPlayer:Kick(m)
-end
 
 function load_astral()
 if workspace.StreamingEnabled == false then
