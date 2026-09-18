@@ -1,0 +1,819 @@
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Debris = game:GetService("Debris")
+local ScriptService = game:GetService("ServerScriptService")
+
+local RemoteEvent = ReplicatedStorage:WaitForChild("RemoteEvent")
+local MadeiraAudio = ReplicatedStorage:WaitForChild("MadeiraQuebrando")
+local BindableEvent = ScriptService:WaitForChild("Event")
+
+local DANO_PISTOLA = 50
+local DISTANCIA_PISTOLA = 500
+
+local ESPESSURA_LINHA = 1
+local TEMPO_LINHA = 0.055
+local TEMPO_ENTRE_DISPAROS = 0.16
+
+local LIMITE_HORIZONTAL = math.rad(65)
+
+local UltimoDisparo = {}
+local DadosMira = {}
+local MiraDisparoID = {}
+
+local function EncontrarHumanoidDaParte(Parte)
+	if not Parte then
+		return nil, nil
+	end
+
+	local Atual = Parte
+
+	while Atual and Atual ~= Workspace do
+		if Atual:IsA("Model") then
+			local Humanoid = Atual:FindFirstChildOfClass("Humanoid")
+
+			if Humanoid then
+				return Atual, Humanoid
+			end
+		end
+
+		Atual = Atual.Parent
+	end
+
+	return nil, nil
+end
+
+local function ObterPistolaEquipada(Player)
+	local Character = Player.Character
+
+	if not Character then
+		return nil
+	end
+
+	for _, Objeto in ipairs(Character:GetChildren()) do
+		if Objeto:IsA("Tool") then
+			if Objeto:GetAttribute("Quantidade") ~= nil then
+				return Objeto
+			end
+		end
+	end
+
+	return nil
+end
+
+local function TocarSomDisparo(Handle)
+	local Audios = {}
+
+	for _, Objeto in ipairs(Handle:GetChildren()) do
+		if Objeto:IsA("Sound") and Objeto.Name == "Audio" then
+			table.insert(Audios, Objeto)
+		end
+	end
+
+	if #Audios == 0 then
+		return
+	end
+
+	local Audio = Audios[math.random(1, #Audios)]
+
+	Audio:Stop()
+	Audio.TimePosition = 0
+	Audio:Play()
+end
+
+local function CriarFlashDisparo(Handle)
+	if not Handle or not Handle.Parent then
+		return
+	end
+
+	local Light = Instance.new("PointLight")
+	Light.Name = "FlashLight"
+	Light.Brightness = 8
+	Light.Range = 12
+	Light.Shadows = true
+	Light.Parent = Handle
+
+	Debris:AddItem(Light, 0.045)
+end
+
+local function CriarTracoDisparo(Origem, Final)
+	local Distancia = (Final - Origem).Magnitude
+
+	if Distancia <= 0.01 then
+		return
+	end
+
+	local Linha = Instance.new("Part")
+
+	Linha.Name = "TracoBala"
+	Linha.Anchored = true
+	Linha.CanCollide = false
+	Linha.CanTouch = false
+	Linha.CanQuery = false
+	Linha.CastShadow = false
+
+	Linha.Size = Vector3.new(
+		ESPESSURA_LINHA,
+		ESPESSURA_LINHA,
+		Distancia
+	)
+
+	Linha.CFrame = CFrame.lookAt(
+		(Origem + Final) / 2,
+		Final
+	)
+
+	Linha.Material = Enum.Material.Neon
+	Linha.Transparency = 1
+	Linha.Parent = Workspace
+
+	Debris:AddItem(Linha, TEMPO_LINHA)
+end
+
+local function AplicarDanoDisparo(Player, Resultado)
+	if not Resultado then
+		return
+	end
+
+	local Parte = Resultado.Instance
+
+	if not Parte or not Parte:IsA("BasePart") then
+		return
+	end
+
+	local AlvoVida = nil
+	local Atual = Parte
+
+	while Atual and Atual ~= Workspace do
+		if Atual:GetAttribute("Vida") ~= nil then
+			AlvoVida = Atual
+			break
+		end
+
+		Atual = Atual.Parent
+	end
+
+	local Model, Humanoid = EncontrarHumanoidDaParte(Parte)
+
+	if Model and Model == Player.Character then
+		Model = nil
+		Humanoid = nil
+	end
+
+	local PlayerAlvo = nil
+
+	if Model then
+		PlayerAlvo = Players:GetPlayerFromCharacter(Model)
+
+		if PlayerAlvo == Player then
+			Model = nil
+			Humanoid = nil
+			PlayerAlvo = nil
+		end
+	end
+
+	if AlvoVida then
+		local Vida = AlvoVida:GetAttribute("Vida")
+
+		if typeof(Vida) == "number" and Vida > 0 then
+			local NovaVida = math.max(
+				0,
+				Vida - DANO_PISTOLA
+			)
+
+			AlvoVida:SetAttribute(
+				"Vida",
+				NovaVida
+			)
+
+			if Parte.Material == Enum.Material.Wood
+				or Parte.Material == Enum.Material.WoodPlanks then
+
+				if not Parte:FindFirstChild("MadeiraQuebrando") then
+					local Sound = MadeiraAudio:Clone()
+					Sound.Name = "MadeiraQuebrando"
+					Sound.Parent = Parte
+					Sound:Play()
+
+					Sound.Ended:Once(function()
+						if Sound and Sound.Parent then
+							Sound:Destroy()
+						end
+					end)
+				end
+			end
+		end
+	end
+
+	if Humanoid and Humanoid.Health > 0 then
+		if not PlayerAlvo or PlayerAlvo:GetAttribute("Vestindo") ~= true then
+			Humanoid:TakeDamage(DANO_PISTOLA)
+		end
+	end
+end
+
+local function CalcularDirecao(Player, Origem, PosicaoMouse)
+	local Character = Player.Character
+
+	if not Character then
+		return nil
+	end
+
+	local Root = Character:FindFirstChild("HumanoidRootPart")
+
+	if not Root then
+		return nil
+	end
+
+	local Frente = Root.CFrame.LookVector
+
+	local FrenteHorizontal = Vector3.new(
+		Frente.X,
+		0,
+		Frente.Z
+	)
+
+	if FrenteHorizontal.Magnitude <= 0.001 then
+		return nil
+	end
+
+	FrenteHorizontal = FrenteHorizontal.Unit
+
+	local DirecaoMouse = PosicaoMouse - Origem
+
+	if DirecaoMouse.Magnitude <= 0.001 then
+		DirecaoMouse = Frente
+	else
+		DirecaoMouse = DirecaoMouse.Unit
+	end
+
+	local DirecaoHorizontal = Vector3.new(
+		DirecaoMouse.X,
+		0,
+		DirecaoMouse.Z
+	)
+
+	if DirecaoHorizontal.Magnitude <= 0.001 then
+		DirecaoHorizontal = FrenteHorizontal
+	else
+		DirecaoHorizontal = DirecaoHorizontal.Unit
+	end
+
+	local Dot = math.clamp(
+		FrenteHorizontal:Dot(DirecaoHorizontal),
+		-1,
+		1
+	)
+
+	local Angulo = math.acos(Dot)
+
+	if Angulo > LIMITE_HORIZONTAL then
+		DirecaoHorizontal = FrenteHorizontal
+	else
+		local Cross = FrenteHorizontal:Cross(DirecaoHorizontal)
+
+		if Cross.Y < 0 then
+			Angulo = -Angulo
+		end
+
+		Angulo = math.clamp(
+			Angulo,
+			-LIMITE_HORIZONTAL,
+			LIMITE_HORIZONTAL
+		)
+
+		DirecaoHorizontal =
+			CFrame.fromAxisAngle(
+				Vector3.yAxis,
+				Angulo
+			):VectorToWorldSpace(FrenteHorizontal)
+	end
+
+	local Altura = math.clamp(
+		DirecaoMouse.Y,
+		-0.75,
+		0.75
+	)
+
+	local DirecaoFinal = Vector3.new(
+		DirecaoHorizontal.X,
+		Altura,
+		DirecaoHorizontal.Z
+	)
+
+	if DirecaoFinal.Magnitude <= 0.001 then
+		return Frente
+	end
+
+	return DirecaoFinal.Unit
+end
+
+local function DispararPistola(Player, PosicaoMouse)
+	if typeof(PosicaoMouse) ~= "Vector3" then
+		return
+	end
+
+	local Character = Player.Character
+
+	if not Character then
+		return
+	end
+
+	local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+	local Root = Character:FindFirstChild("HumanoidRootPart")
+
+	if not Humanoid or Humanoid.Health <= 0 or not Root then
+		return
+	end
+
+	if Humanoid.Sit then
+		return
+	end
+
+	local Tool = ObterPistolaEquipada(Player)
+
+	if not Tool or Tool.Parent ~= Character then
+		Player:SetAttribute("PistolaEquipada", false)
+		RemoverMiraPistola(Player)
+		return
+	end
+
+	if Player:GetAttribute("PistolaEquipada") ~= true then
+		Player:SetAttribute("PistolaEquipada", true)
+
+		local Quantidade = Tool:GetAttribute("Quantidade")
+
+		if typeof(Quantidade) == "number" then
+			local MunicaoAtual = Player:GetAttribute("MunicaoPistola")
+
+			if typeof(MunicaoAtual) ~= "number" then
+				Player:SetAttribute(
+					"MunicaoPistola",
+					math.max(0, Quantidade)
+				)
+			end
+		end
+	end
+
+	local Agora = os.clock()
+	local Ultimo = UltimoDisparo[Player] or 0
+
+	if Agora - Ultimo < TEMPO_ENTRE_DISPAROS then
+		return
+	end
+
+	local Municao = Player:GetAttribute("MunicaoPistola")
+
+	if typeof(Municao) ~= "number" or Municao <= 0 then
+		return
+	end
+
+	local Handle = Tool:FindFirstChild("Handle")
+
+	if not Handle or not Handle:IsA("BasePart") then
+		return
+	end
+
+	local Direcao = CalcularDirecao(
+		Player,
+		Handle.Position,
+		PosicaoMouse
+	)
+
+	if not Direcao then
+		return
+	end
+
+	UltimoDisparo[Player] = Agora
+
+	local Origem = Handle.Position
+	local Resultado = nil
+	local PosicaoFinal = Origem + Direcao * DISTANCIA_PISTOLA
+	local AlvoProximo = nil
+
+	local OverlapParams = OverlapParams.new()
+	OverlapParams.FilterType = Enum.RaycastFilterType.Exclude
+	OverlapParams.FilterDescendantsInstances = {
+		Character,
+		Tool
+	}
+	OverlapParams.MaxParts = 100
+
+	local PartesProximas = Workspace:GetPartBoundsInRadius(
+		Origem + Direcao * 1.75,
+		2.5,
+		OverlapParams
+	)
+
+	local MelhorDistancia = math.huge
+
+	for _, Parte in ipairs(PartesProximas) do
+		if Parte
+			and Parte.Parent
+			and Parte:IsA("BasePart") then
+
+			local Model, HumanoidAlvo = EncontrarHumanoidDaParte(Parte)
+
+			if Model
+				and HumanoidAlvo
+				and Model ~= Character
+				and HumanoidAlvo.Health > 0 then
+
+				local PlayerAlvo = Players:GetPlayerFromCharacter(Model)
+
+				if PlayerAlvo ~= Player then
+					local AlvoRoot =
+						Model:FindFirstChild("HumanoidRootPart")
+						or Model:FindFirstChildWhichIsA("BasePart", true)
+
+					if AlvoRoot then
+						local Diferenca = AlvoRoot.Position - Origem
+						local Distancia = Diferenca.Magnitude
+
+						if Distancia > 0.01 then
+							local DirecaoAlvo = Diferenca.Unit
+							local Alinhamento = Direcao:Dot(DirecaoAlvo)
+
+							if Alinhamento >= 0.55
+								and Distancia < MelhorDistancia then
+
+								MelhorDistancia = Distancia
+								AlvoProximo = Parte
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+
+	if AlvoProximo and MelhorDistancia <= 4 then
+		Resultado = {
+			Instance = AlvoProximo,
+			Position = AlvoProximo.Position,
+			Normal = -Direcao
+		}
+
+		PosicaoFinal = AlvoProximo.Position
+	else
+		local Params = RaycastParams.new()
+
+		Params.FilterType = Enum.RaycastFilterType.Exclude
+		Params.FilterDescendantsInstances = {
+			Character,
+			Tool
+		}
+
+		Params.IgnoreWater = true
+		Params.RespectCanCollide = true
+
+		Resultado = Workspace:Spherecast(
+			Origem,
+			0.35,
+			Direcao * DISTANCIA_PISTOLA,
+			Params
+		)
+
+		if Resultado then
+			PosicaoFinal = Resultado.Position
+		end
+	end
+
+	AplicarDanoDisparo(
+		Player,
+		Resultado
+	)
+
+	Player:SetAttribute(
+		"MunicaoPistola",
+		math.max(0, Municao - 1)
+	)
+
+	BindableEvent:Fire(
+		Player,
+		"AcaoSuspeita"
+	)
+
+	TocarSomDisparo(Handle)
+
+	CriarFlashDisparo(
+		Handle
+	)
+
+	CriarTracoDisparo(
+		Origem,
+		PosicaoFinal
+	)
+
+	RemoteEvent:FireClient(
+		Player,
+		"RecoilPistola"
+	)
+end
+
+local function CriarMiraPistola(Player)
+	local Character = Player.Character
+
+	if not Character then
+		return nil
+	end
+
+	local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+	local RightUpperArm = Character:FindFirstChild("RightUpperArm")
+	local RightHand = Character:FindFirstChild("RightHand")
+
+	if not Humanoid or not RightUpperArm or not RightHand then
+		return nil
+	end
+
+	if Humanoid.RigType ~= Enum.HumanoidRigType.R15 then
+		return nil
+	end
+
+	if DadosMira[Player] then
+		local DadosExistentes = DadosMira[Player]
+
+		if DadosExistentes.IK
+			and DadosExistentes.IK.Parent
+			and DadosExistentes.Target
+			and DadosExistentes.Target.Parent then
+
+			return DadosExistentes
+		end
+
+		RemoverMiraPistola(Player)
+	end
+
+	local Target = Instance.new("Part")
+	Target.Name = "AimRightTarget"
+	Target.Size = Vector3.new(0.2, 0.2, 0.2)
+	Target.Transparency = 1
+	Target.Anchored = true
+	Target.CanCollide = false
+	Target.CanTouch = false
+	Target.CanQuery = false
+	Target.CastShadow = false
+	Target.Parent = Workspace
+
+	local IK = Instance.new("IKControl")
+	IK.Name = "AimRightIK"
+	IK.Type = Enum.IKControlType.Transform
+	IK.ChainRoot = RightUpperArm
+	IK.EndEffector = RightHand
+	IK.Target = Target
+	IK.Weight = 0
+	IK.Priority = 20
+	IK.Parent = Humanoid
+
+	DadosMira[Player] = {
+		IK = IK,
+		Target = Target
+	}
+
+	return DadosMira[Player]
+end
+
+function RemoverMiraPistola(Player)
+	MiraDisparoID[Player] = (MiraDisparoID[Player] or 0) + 1
+
+	local Dados = DadosMira[Player]
+
+	if not Dados then
+		return
+	end
+
+	if Dados.IK then
+		Dados.IK:Destroy()
+	end
+
+	if Dados.Target then
+		Dados.Target:Destroy()
+	end
+
+	DadosMira[Player] = nil
+end
+
+local function AtualizarMiraDisparoTemporaria(Player, Direcao)
+	if not Direcao or Direcao.Magnitude <= 0.001 then
+		return
+	end
+
+	local Character = Player.Character
+
+	if not Character then
+		return
+	end
+
+	local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+	local Root = Character:FindFirstChild("HumanoidRootPart")
+
+	if not Humanoid or Humanoid.Health <= 0 or not Root then
+		return
+	end
+
+	local Dados = CriarMiraPistola(Player)
+
+	if not Dados then
+		return
+	end
+
+	Direcao = Direcao.Unit
+
+	MiraDisparoID[Player] = (MiraDisparoID[Player] or 0) + 1
+
+	local MeuID = MiraDisparoID[Player]
+
+	local Ponto = Root.Position + Direcao * 1000
+
+	Dados.Target.CFrame = CFrame.lookAt(
+		Ponto,
+		Ponto + Direcao
+	)
+
+	Dados.IK.Weight = 1
+
+	task.delay(0.12, function()
+		if MiraDisparoID[Player] ~= MeuID then
+			return
+		end
+
+		if not Player.Parent then
+			return
+		end
+
+		if Player:GetAttribute("PistolaEquipada") ~= true then
+			return
+		end
+
+		local DadosAtual = DadosMira[Player]
+
+		if not DadosAtual then
+			return
+		end
+
+		if DadosAtual.IK then
+			DadosAtual.IK.Weight = 0
+		end
+	end)
+end
+
+local function ConfigurarMorte(Player, Character)
+	local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+
+	if not Humanoid then
+		return
+	end
+
+	Humanoid.Died:Connect(function()
+		Player:SetAttribute("PistolaEquipada", false)
+		RemoverMiraPistola(Player)
+	end)
+end
+
+local function ConfigurarCharacter(Player, Character)
+	task.defer(function()
+		if Character and Character.Parent then
+			ConfigurarMorte(Player, Character)
+		end
+	end)
+end
+
+local function ConfigurarPlayer(Player)
+	Player.CharacterAdded:Connect(function(Character)
+		ConfigurarCharacter(Player, Character)
+	end)
+
+	if Player.Character then
+		ConfigurarCharacter(Player, Player.Character)
+	end
+end
+
+RemoteEvent.OnServerEvent:Connect(function(Player, Args, PosicaoHandle, PosicaoMouse)
+	if Args == "AtualizarMiraPistola" then
+		if typeof(PosicaoHandle) ~= "Vector3" then
+			return
+		end
+
+		if PosicaoHandle.Magnitude < 0.9 or PosicaoHandle.Magnitude > 1.1 then
+			return
+		end
+
+		if Player:GetAttribute("PistolaEquipada") ~= true then
+			return
+		end
+
+		local Character = Player.Character
+
+		if not Character then
+			return
+		end
+
+		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+		local Root = Character:FindFirstChild("HumanoidRootPart")
+
+		if not Humanoid or Humanoid.Health <= 0 or not Root then
+			return
+		end
+
+		local Direcao = PosicaoHandle.Unit
+
+		if PosicaoMouse == false then
+			AtualizarMiraDisparoTemporaria(
+				Player,
+				Direcao
+			)
+
+			return
+		end
+
+		local Dados = CriarMiraPistola(Player)
+
+		if not Dados then
+			return
+		end
+
+		local Ponto = Root.Position + Direcao * 1000
+
+		Dados.Target.CFrame = CFrame.lookAt(
+			Ponto,
+			Ponto + Direcao
+		)
+
+		Dados.IK.Weight = 1
+
+		return
+	end
+
+	if Args == "PararMiraDisparoPistola" then
+		MiraDisparoID[Player] = (MiraDisparoID[Player] or 0) + 1
+
+		local Dados = DadosMira[Player]
+
+		if Dados and Dados.IK then
+			Dados.IK.Weight = 0
+		end
+
+		return
+	end
+
+	if Args == "EquiparPistola" then
+		local Character = Player.Character
+
+		if not Character then
+			return
+		end
+
+		local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+
+		if not Humanoid or Humanoid.Health <= 0 or Humanoid.Sit then
+			return
+		end
+
+		local Tool = ObterPistolaEquipada(Player)
+
+		if not Tool or Tool.Parent ~= Character then
+			Player:SetAttribute("PistolaEquipada", false)
+			return
+		end
+
+		Player:SetAttribute("PistolaEquipada", true)
+
+		local Quantidade = Tool:GetAttribute("Quantidade")
+
+		if typeof(Quantidade) == "number" then
+			Player:SetAttribute(
+				"MunicaoPistola",
+				math.max(0, Quantidade)
+			)
+		end
+
+		return
+	end
+
+	if Args == "DesequiparPistola" then
+		Player:SetAttribute("PistolaEquipada", false)
+		RemoverMiraPistola(Player)
+		return
+	end
+
+	if Args == "DisparoPistola" then
+		DispararPistola(
+			Player,
+			PosicaoMouse
+		)
+
+		return
+	end
+end)
+
+Players.PlayerAdded:Connect(ConfigurarPlayer)
+
+for _, Player in ipairs(Players:GetPlayers()) do
+	ConfigurarPlayer(Player)
+end
+
+Players.PlayerRemoving:Connect(function(Player)
+	UltimoDisparo[Player] = nil
+	MiraDisparoID[Player] = nil
+	RemoverMiraPistola(Player)
+end)
