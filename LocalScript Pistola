@@ -1,0 +1,861 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Player = Players.LocalPlayer
+local Tool = script.Parent
+local Remote = ReplicatedStorage:WaitForChild("RemoteEvent")
+local Handle = Tool:WaitForChild("Handle")
+
+local Character
+local Humanoid
+local Root
+
+local RightIK
+local RightTarget
+
+local Equipado = false
+local Mirando = false
+local Zoomando = false
+
+local FOVNormal = 75
+local FOVMira = 50
+
+local LIMITE_MIRA = math.rad(65)
+local DISTANCIA_MIRA = 1000
+
+local TweenFOV
+local UpdateConnection
+local DeathConnection
+local MiraWeightConnection
+
+local AutoRotateOriginal = true
+local MiraDisparoID = 0
+
+local function Desconectar(Conexao)
+	if Conexao then
+		pcall(function()
+			Conexao:Disconnect()
+		end)
+	end
+
+	return nil
+end
+
+local function AtualizarPersonagem()
+	Character = Player.Character
+
+	if not Character or not Character.Parent then
+		return false
+	end
+
+	Humanoid = Character:FindFirstChildOfClass("Humanoid")
+	Root = Character:FindFirstChild("HumanoidRootPart")
+
+	if not Humanoid or not Root then
+		return false
+	end
+
+	return true
+end
+
+local function DesconectarMorte()
+	DeathConnection = Desconectar(DeathConnection)
+end
+
+local function DesconectarPeso()
+	MiraWeightConnection = Desconectar(MiraWeightConnection)
+end
+
+local function AlterarPesoMira(Peso)
+	if not RightIK or not RightIK.Parent then
+		return
+	end
+
+	DesconectarPeso()
+
+	local Inicio = RightIK.Weight
+	local Tempo = 0.15
+	local TempoAtual = 0
+
+	MiraWeightConnection = RunService.RenderStepped:Connect(function(DeltaTime)
+		if not RightIK or not RightIK.Parent then
+			DesconectarPeso()
+			return
+		end
+
+		TempoAtual += DeltaTime
+
+		local Alpha = math.clamp(TempoAtual / Tempo, 0, 1)
+		Alpha = 1 - math.pow(1 - Alpha, 3)
+
+		RightIK.Weight = Inicio + (Peso - Inicio) * Alpha
+
+		if TempoAtual >= Tempo then
+			RightIK.Weight = Peso
+			DesconectarPeso()
+		end
+	end)
+end
+
+local function AlterarFOV(Valor)
+	local Camera = workspace.CurrentCamera
+
+	if not Camera then
+		return
+	end
+
+	if TweenFOV then
+		pcall(function()
+			TweenFOV:Cancel()
+			TweenFOV:Destroy()
+		end)
+
+		TweenFOV = nil
+	end
+
+	TweenFOV = TweenService:Create(
+		Camera,
+		TweenInfo.new(
+			0.18,
+			Enum.EasingStyle.Quad,
+			Enum.EasingDirection.Out
+		),
+		{
+			FieldOfView = Valor
+		}
+	)
+
+	TweenFOV:Play()
+end
+
+local function DestruirIK()
+	DesconectarPeso()
+
+	if RightIK then
+		pcall(function()
+			RightIK:Destroy()
+		end)
+
+		RightIK = nil
+	end
+
+	if RightTarget then
+		pcall(function()
+			RightTarget:Destroy()
+		end)
+
+		RightTarget = nil
+	end
+end
+
+local function CriarIK()
+	if not Character or not Character.Parent then
+		return false
+	end
+
+	if not Humanoid or Humanoid.Health <= 0 then
+		return false
+	end
+
+	local RightUpperArm = Character:FindFirstChild("RightUpperArm")
+	local RightHand = Character:FindFirstChild("RightHand")
+
+	if not RightUpperArm or not RightHand then
+		return false
+	end
+
+	DestruirIK()
+
+	RightTarget = Instance.new("Part")
+	RightTarget.Name = "AimRightTarget"
+	RightTarget.Size = Vector3.new(0.2, 0.2, 0.2)
+	RightTarget.Transparency = 1
+	RightTarget.Anchored = true
+	RightTarget.CanCollide = false
+	RightTarget.CanTouch = false
+	RightTarget.CanQuery = false
+	RightTarget.CastShadow = false
+	RightTarget.Parent = workspace
+
+	RightIK = Instance.new("IKControl")
+	RightIK.Name = "AimRightIK"
+	RightIK.Type = Enum.IKControlType.Transform
+	RightIK.ChainRoot = RightUpperArm
+	RightIK.EndEffector = RightHand
+	RightIK.Target = RightTarget
+	RightIK.Weight = 0
+	RightIK.Priority = 20
+	RightIK.Parent = Humanoid
+
+	return true
+end
+
+local function ObterPosicaoMira()
+	local Camera = workspace.CurrentCamera
+
+	if not Camera then
+		return nil
+	end
+
+	if UserInputService.TouchEnabled and not UserInputService.MouseEnabled then
+		local Viewport = Camera.ViewportSize
+
+		return Vector2.new(
+			Viewport.X * 0.5,
+			Viewport.Y * 0.5
+		)
+	end
+
+	local Posicao = UserInputService:GetMouseLocation()
+
+	if Posicao.X <= 0 or Posicao.Y <= 0 then
+		local Viewport = Camera.ViewportSize
+
+		return Vector2.new(
+			Viewport.X * 0.5,
+			Viewport.Y * 0.5
+		)
+	end
+
+	return Posicao
+end
+
+local function ObterDirecaoMira()
+	local Camera = workspace.CurrentCamera
+
+	if not Camera or not Root then
+		return nil
+	end
+
+	local Posicao = ObterPosicaoMira()
+
+	if not Posicao then
+		return nil
+	end
+
+	local Ray = Camera:ViewportPointToRay(
+		Posicao.X,
+		Posicao.Y
+	)
+
+	local DirecaoCamera = Ray.Direction.Unit
+
+	local Frente = Root.CFrame.LookVector
+
+	local FrenteHorizontal = Vector3.new(
+		Frente.X,
+		0,
+		Frente.Z
+	)
+
+	if FrenteHorizontal.Magnitude <= 0.001 then
+		return DirecaoCamera
+	end
+
+	FrenteHorizontal = FrenteHorizontal.Unit
+
+	local DirecaoHorizontal = Vector3.new(
+		DirecaoCamera.X,
+		0,
+		DirecaoCamera.Z
+	)
+
+	if DirecaoHorizontal.Magnitude <= 0.001 then
+		DirecaoHorizontal = FrenteHorizontal
+	else
+		DirecaoHorizontal = DirecaoHorizontal.Unit
+	end
+
+	local Dot = math.clamp(
+		FrenteHorizontal:Dot(DirecaoHorizontal),
+		-1,
+		1
+	)
+
+	local Angulo = math.acos(Dot)
+
+	local Cross = FrenteHorizontal:Cross(DirecaoHorizontal)
+
+	if Cross.Y < 0 then
+		Angulo = -Angulo
+	end
+
+	Angulo = math.clamp(
+		Angulo,
+		-LIMITE_MIRA,
+		LIMITE_MIRA
+	)
+
+	local DirecaoHorizontalFinal =
+		CFrame.fromAxisAngle(
+			Vector3.yAxis,
+			Angulo
+		):VectorToWorldSpace(FrenteHorizontal)
+
+	local Altura = math.clamp(
+		DirecaoCamera.Y,
+		-0.85,
+		0.85
+	)
+
+	local DirecaoFinal = Vector3.new(
+		DirecaoHorizontalFinal.X,
+		Altura,
+		DirecaoHorizontalFinal.Z
+	)
+
+	if DirecaoFinal.Magnitude <= 0.001 then
+		return Frente.Unit
+	end
+
+	return DirecaoFinal.Unit
+end
+
+local function AtualizarMira(DeltaTime)
+	if not Equipado or not Mirando then
+		return
+	end
+
+	if Character ~= Player.Character then
+		return
+	end
+
+	if not Humanoid or Humanoid.Health <= 0 then
+		return
+	end
+
+	if not Root or not RightIK or not RightTarget then
+		return
+	end
+
+	local Direcao = ObterDirecaoMira()
+
+	if not Direcao then
+		return
+	end
+
+	Remote:FireServer(
+		"AtualizarMiraPistola",
+		Direcao
+	)
+
+	local DirecaoHorizontal = Vector3.new(
+		Direcao.X,
+		0,
+		Direcao.Z
+	)
+
+	if DirecaoHorizontal.Magnitude > 0.001 then
+		DirecaoHorizontal = DirecaoHorizontal.Unit
+
+		local Frente = Vector3.new(
+			Root.CFrame.LookVector.X,
+			0,
+			Root.CFrame.LookVector.Z
+		)
+
+		if Frente.Magnitude > 0.001 then
+			Frente = Frente.Unit
+
+			local Dot = math.clamp(
+				Frente:Dot(DirecaoHorizontal),
+				-1,
+				1
+			)
+
+			local Angulo = math.acos(Dot)
+
+			local Cross = Frente:Cross(DirecaoHorizontal)
+
+			if Cross.Y < 0 then
+				Angulo = -Angulo
+			end
+
+			Angulo = math.clamp(
+				Angulo,
+				-LIMITE_MIRA,
+				LIMITE_MIRA
+			)
+
+			local DirecaoFinal =
+				CFrame.fromAxisAngle(
+					Vector3.yAxis,
+					Angulo
+				):VectorToWorldSpace(Frente)
+
+			local Alvo = CFrame.lookAt(
+				Root.Position,
+				Root.Position + DirecaoFinal
+			)
+
+			local Alpha = 1 - math.exp(-12 * DeltaTime)
+
+			Root.CFrame = Root.CFrame:Lerp(
+				Alvo,
+				Alpha
+			)
+		end
+	end
+
+	local Ponto = Root.Position + Direcao * DISTANCIA_MIRA
+
+	RightTarget.CFrame = CFrame.lookAt(
+		Ponto,
+		Ponto + Direcao
+	)
+end
+
+local function GarantirPersonagem()
+	if Character ~= Player.Character then
+		return AtualizarPersonagem()
+	end
+
+	if not Character or not Character.Parent then
+		return AtualizarPersonagem()
+	end
+
+	if not Humanoid or not Humanoid.Parent then
+		return AtualizarPersonagem()
+	end
+
+	if not Root or not Root.Parent then
+		return AtualizarPersonagem()
+	end
+
+	if Humanoid.Health <= 0 then
+		return false
+	end
+
+	return true
+end
+
+local function MiraInstantaneaDisparo(Direcao)
+	if not Equipado then
+		return
+	end
+
+	if not GarantirPersonagem() then
+		return
+	end
+
+	if not Direcao or Direcao.Magnitude <= 0.001 then
+		return
+	end
+
+	if not RightIK or not RightTarget then
+		if not CriarIK() then
+			return
+		end
+	end
+
+	Direcao = Direcao.Unit
+
+	MiraDisparoID += 1
+
+	local MeuID = MiraDisparoID
+
+	local DirecaoHorizontal = Vector3.new(
+		Direcao.X,
+		0,
+		Direcao.Z
+	)
+
+	if DirecaoHorizontal.Magnitude > 0.001 then
+		DirecaoHorizontal = DirecaoHorizontal.Unit
+
+		local Frente = Vector3.new(
+			Root.CFrame.LookVector.X,
+			0,
+			Root.CFrame.LookVector.Z
+		)
+
+		if Frente.Magnitude > 0.001 then
+			Frente = Frente.Unit
+
+			local Dot = math.clamp(
+				Frente:Dot(DirecaoHorizontal),
+				-1,
+				1
+			)
+
+			local Angulo = math.acos(Dot)
+
+			local Cross = Frente:Cross(DirecaoHorizontal)
+
+			if Cross.Y < 0 then
+				Angulo = -Angulo
+			end
+
+			Angulo = math.clamp(
+				Angulo,
+				-LIMITE_MIRA,
+				LIMITE_MIRA
+			)
+
+			local DirecaoFinal =
+				CFrame.fromAxisAngle(
+					Vector3.yAxis,
+					Angulo
+				):VectorToWorldSpace(Frente)
+
+			Root.CFrame = CFrame.lookAt(
+				Root.Position,
+				Root.Position + DirecaoFinal
+			)
+		end
+	end
+
+	local Ponto = Root.Position + Direcao * DISTANCIA_MIRA
+
+	RightTarget.CFrame = CFrame.lookAt(
+		Ponto,
+		Ponto + Direcao
+	)
+
+	RightIK.Weight = 1
+
+	Remote:FireServer(
+		"AtualizarMiraPistola",
+		Direcao,
+		false
+	)
+
+	task.delay(0.12, function()
+		if MeuID ~= MiraDisparoID then
+			return
+		end
+
+		if not Equipado then
+			return
+		end
+
+		if Mirando then
+			return
+		end
+
+		if RightIK and RightIK.Parent then
+			AlterarPesoMira(0)
+		end
+
+		Remote:FireServer(
+			"PararMiraDisparoPistola"
+		)
+	end)
+end
+
+local function ComecarMira()
+	if not Equipado or Mirando then
+		return
+	end
+
+	if not GarantirPersonagem() then
+		return
+	end
+
+	if not RightIK or not RightTarget then
+		if not CriarIK() then
+			return
+		end
+	end
+
+	AutoRotateOriginal = Humanoid.AutoRotate
+	Humanoid.AutoRotate = false
+
+	Mirando = true
+
+	RightIK.Weight = 0
+
+	AlterarPesoMira(1)
+
+	UpdateConnection = Desconectar(UpdateConnection)
+
+	UpdateConnection = RunService.RenderStepped:Connect(
+		AtualizarMira
+	)
+
+	local Direcao = ObterDirecaoMira()
+
+	if Direcao then
+		Remote:FireServer(
+			"AtualizarMiraPistola",
+			Direcao
+		)
+	end
+end
+
+local function ComecarZoom()
+	if not Equipado or not Mirando or Zoomando then
+		return
+	end
+
+	Zoomando = true
+
+	AlterarFOV(FOVMira)
+end
+
+local function PararZoom()
+	if not Zoomando then
+		return
+	end
+
+	Zoomando = false
+
+	AlterarFOV(FOVNormal)
+end
+
+local function PararMira()
+	if not Mirando then
+		return
+	end
+
+	Mirando = false
+	Zoomando = false
+
+	UpdateConnection = Desconectar(UpdateConnection)
+
+	if RightIK and RightIK.Parent then
+		AlterarPesoMira(0)
+	end
+
+	if Humanoid and Humanoid.Parent then
+		Humanoid.AutoRotate = AutoRotateOriginal
+	end
+
+	Remote:FireServer("DesequiparPistola")
+
+	AlterarFOV(FOVNormal)
+end
+
+local function Limpar()
+	Mirando = false
+	Zoomando = false
+
+	MiraDisparoID += 1
+
+	UpdateConnection = Desconectar(UpdateConnection)
+
+	DesconectarPeso()
+	DesconectarMorte()
+
+	if Humanoid and Humanoid.Parent then
+		Humanoid.AutoRotate = AutoRotateOriginal
+	end
+
+	if TweenFOV then
+		pcall(function()
+			TweenFOV:Cancel()
+			TweenFOV:Destroy()
+		end)
+
+		TweenFOV = nil
+	end
+
+	DestruirIK()
+
+	local Camera = workspace.CurrentCamera
+
+	if Camera then
+		Camera.FieldOfView = FOVNormal
+	end
+end
+
+local function ConectarMorte()
+	DesconectarMorte()
+
+	if not Humanoid then
+		return
+	end
+
+	DeathConnection = Humanoid.Died:Connect(function()
+		Equipado = false
+
+		MiraDisparoID += 1
+
+		Limpar()
+
+		Remote:FireServer("DesequiparPistola")
+	end)
+end
+
+local function AnimacaoBloqueandoDisparo()
+	if not Humanoid then
+		return true
+	end
+
+	local Animator = Humanoid:FindFirstChildOfClass("Animator")
+
+	if not Animator then
+		return false
+	end
+
+	for _, Track in ipairs(Animator:GetPlayingAnimationTracks()) do
+		local Animation = Track.Animation
+
+		if Animation then
+			local ID = Animation.AnimationId
+
+			if ID == "rbxassetid://71644396892385"
+				or ID == "rbxassetid://82599509502243" then
+
+				return true
+			end
+		end
+	end
+
+	return false
+end
+
+local function PodeDisparar()
+	if not Equipado then
+		return false
+	end
+
+	if not GarantirPersonagem() then
+		return false
+	end
+
+	if Humanoid.Sit then
+		return false
+	end
+
+	if AnimacaoBloqueandoDisparo() then
+		return false
+	end
+
+	local Municao = Player:GetAttribute("MunicaoPistola")
+
+	if typeof(Municao) ~= "number" or Municao <= 0 then
+		return false
+	end
+
+	local Camera = workspace.CurrentCamera
+
+	if not Camera then
+		return false
+	end
+
+	if not Handle or not Handle.Parent then
+		return false
+	end
+
+	if Tool.Parent ~= Character then
+		return false
+	end
+
+	return true
+end
+
+local function Disparar()
+	if not PodeDisparar() then
+		return
+	end
+
+	local Direcao = ObterDirecaoMira()
+
+	if not Direcao then
+		return
+	end
+
+	if not Handle or not Handle.Parent then
+		return
+	end
+
+	if not Mirando then
+		MiraInstantaneaDisparo(Direcao)
+	end
+
+	local PosicaoMira = Handle.Position + Direcao * DISTANCIA_MIRA
+
+	Remote:FireServer(
+		"DisparoPistola",
+		Handle.Position,
+		PosicaoMira
+	)
+end
+
+UserInputService.InputBegan:Connect(function(Input, Processado)
+	if Processado or not Equipado then
+		return
+	end
+
+	if Input.UserInputType == Enum.UserInputType.MouseButton2 then
+		ComecarMira()
+		ComecarZoom()
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(Input)
+	if Input.UserInputType == Enum.UserInputType.MouseButton2 then
+		PararZoom()
+		PararMira()
+	end
+end)
+
+Tool.Activated:Connect(function()
+	if not Equipado then
+		return
+	end
+
+	Disparar()
+end)
+
+Tool.Equipped:Connect(function()
+	if Equipado then
+		return
+	end
+
+	if not AtualizarPersonagem() then
+		return
+	end
+
+	if not Humanoid or Humanoid.Health <= 0 then
+		return
+	end
+
+	if Humanoid.Sit then
+		return
+	end
+
+	Equipado = true
+	MiraDisparoID += 1
+
+	local Camera = workspace.CurrentCamera
+
+	if Camera then
+		FOVNormal = Camera.FieldOfView
+	end
+
+	Remote:FireServer("EquiparPistola")
+
+	CriarIK()
+	ConectarMorte()
+end)
+
+Tool.Unequipped:Connect(function()
+	Equipado = false
+	MiraDisparoID += 1
+
+	Remote:FireServer("DesequiparPistola")
+
+	Limpar()
+end)
+
+Player.CharacterAdded:Connect(function(NovoCharacter)
+	Equipado = false
+	MiraDisparoID += 1
+
+	Limpar()
+
+	Character = NovoCharacter
+	Humanoid = nil
+	Root = nil
+
+	local Camera = workspace.CurrentCamera
+
+	if Camera then
+		Camera.FieldOfView = FOVNormal
+	end
+end)
