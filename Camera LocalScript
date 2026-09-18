@@ -1,0 +1,1789 @@
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local StarterGui = game:GetService("StarterGui")
+
+local RemoteEvent = ReplicatedStorage:WaitForChild("RemoteEvent")
+local Module = require(ReplicatedStorage:WaitForChild("ContextActionUtility"))
+
+local Player = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local Mouse = Player:GetMouse()
+
+local AGACHADO_IDLE_ANIMATION_ID = "129651209800940"
+local AGACHADO_WALK_ANIMATION_ID = "139538459949202"
+local FERIDO_IDLE_ANIMATION_ID = "99781084652231"
+
+local AgachadoCorridaSpeed = 15
+local AgachadoCorridaAnimSpeed = 1.25
+
+local Character
+local Humanoid
+local Animator
+local Root
+local AgachadoIdleTrack
+local AgachadoWalkTrack
+local FeridoIdleTrack
+local BlurEffect
+local BlurTween
+
+local Agachado = false
+local Correndo = false
+local ShiftPressionado = false
+local MobileCorrendo = false
+local Ferido = false
+
+local RotacaoSentado
+local EstavaSentado = false
+
+local DeathConnection
+local MoveConnection
+local BatendoConnection
+local StateConnection
+local SitConnection
+local HealthConnection
+local MaxHealthConnection
+local VestindoConnection
+
+local NormalSpeed = 9
+local AgachadoSpeed = 9
+local CorridaSpeed = 26
+
+local FeridoSpeed = 5
+local FeridoCorridaSpeed = 16
+local FeridoAtivaPorcentagem = 0.5
+local FeridoRecuperaPorcentagem = 0.7
+
+local MaxStamina = 10
+local Stamina = MaxStamina
+local StaminaGasto = 1
+local StaminaRecuperacao = 1.5
+
+local CameraTonturaAtual = 0
+local CameraTonturaAlvo = 0
+local CameraTonturaTempo = 0
+
+local HUD
+local Container
+
+local VidaBar
+local VidaGlow
+local VidaTexto
+
+local StaminaBar
+local StaminaGlow
+local StaminaTexto
+
+local VidaScale
+local StaminaScale
+
+local VidaTween
+local StaminaTween
+local VidaGlowTween
+local StaminaGlowTween
+local VidaImpactTween
+local StaminaImpactTween
+local VidaIconTween
+local StaminaIconTween
+local HUDScaleTween
+local HUDBackgroundTween
+
+local UltimaVida = 1
+local UltimaStamina = 1
+
+local VidaBaixa = false
+local StaminaBaixa = false
+
+local CharacterGeneration = 0
+local HUDGeneration = 0
+local MobileConfigurado = false
+
+local function Desconectar(Connection)
+	if Connection then
+		pcall(function()
+			Connection:Disconnect()
+		end)
+	end
+end
+
+local function CancelarTween(Tween)
+	if Tween then
+		pcall(function()
+			Tween:Cancel()
+		end)
+	end
+end
+
+local function DestruirTween(Tween)
+	if Tween then
+		pcall(function()
+			Tween:Cancel()
+			Tween:Destroy()
+		end)
+	end
+	return nil
+end
+
+local function LimparTweens()
+	VidaTween = DestruirTween(VidaTween)
+	StaminaTween = DestruirTween(StaminaTween)
+	VidaGlowTween = DestruirTween(VidaGlowTween)
+	StaminaGlowTween = DestruirTween(StaminaGlowTween)
+	VidaImpactTween = DestruirTween(VidaImpactTween)
+	StaminaImpactTween = DestruirTween(StaminaImpactTween)
+	VidaIconTween = DestruirTween(VidaIconTween)
+	StaminaIconTween = DestruirTween(StaminaIconTween)
+	HUDScaleTween = DestruirTween(HUDScaleTween)
+	HUDBackgroundTween = DestruirTween(HUDBackgroundTween)
+	BlurTween = DestruirTween(BlurTween)
+end
+
+local function AtualizarMouse()
+	if Player:GetAttribute("Vestindo") == true then
+		UserInputService.MouseBehavior = Enum.MouseBehavior.Default
+	else
+		UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+	end
+end
+
+local function CriarBlur()
+	Camera = workspace.CurrentCamera or Camera
+
+	if not Camera then
+		return
+	end
+
+	if BlurEffect and BlurEffect.Parent == Camera then
+		return
+	end
+
+	if BlurEffect then
+		pcall(function()
+			BlurEffect:Destroy()
+		end)
+	end
+
+	BlurEffect = Instance.new("BlurEffect")
+	BlurEffect.Name = "FerimentoBlur"
+	BlurEffect.Size = 0
+	BlurEffect.Parent = Camera
+end
+
+local function AtualizarBlurFerimento(Instantaneo)
+	if not Humanoid
+		or not Humanoid.Parent
+		or Humanoid.MaxHealth <= 0 then
+		return
+	end
+
+	Camera = workspace.CurrentCamera or Camera
+
+	if not Camera then
+		return
+	end
+
+	if not BlurEffect or not BlurEffect.Parent or BlurEffect.Parent ~= Camera then
+		CriarBlur()
+	end
+
+	if not BlurEffect then
+		return
+	end
+
+	local Porcentagem = math.clamp(Humanoid.Health / Humanoid.MaxHealth, 0, 1)
+	local BlurSize = 0
+
+	if Porcentagem < 0.7 then
+		if Porcentagem >= 0.5 then
+			local Alpha = (0.7 - Porcentagem) / 0.2
+			BlurSize = 3 * Alpha
+		elseif Porcentagem >= 0.3 then
+			local Alpha = (0.5 - Porcentagem) / 0.2
+			BlurSize = 3 + 5 * Alpha
+		else
+			local Alpha = math.clamp((0.3 - Porcentagem) / 0.3, 0, 1)
+			BlurSize = 8 + 4 * Alpha
+		end
+	end
+
+	BlurSize = math.clamp(BlurSize, 0, 12)
+
+	BlurTween = DestruirTween(BlurTween)
+
+	if Instantaneo then
+		BlurEffect.Size = BlurSize
+		return
+	end
+
+	BlurTween = TweenService:Create(
+		BlurEffect,
+		TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{Size = BlurSize}
+	)
+
+	BlurTween:Play()
+end
+
+local function RemoverBlur()
+	BlurTween = DestruirTween(BlurTween)
+
+	if BlurEffect then
+		pcall(function()
+			BlurEffect.Size = 0
+			BlurEffect:Destroy()
+		end)
+	end
+
+	BlurEffect = nil
+end
+
+local function AtualizarTonturaAlvo()
+	if not Humanoid or not Humanoid.Parent or Humanoid.MaxHealth <= 0 then
+		CameraTonturaAlvo = 0
+		return
+	end
+
+	local Porcentagem = math.clamp(Humanoid.Health / Humanoid.MaxHealth, 0, 1)
+
+	if Porcentagem >= 0.7 then
+		CameraTonturaAlvo = 0
+		return
+	end
+
+	local Alpha = math.clamp((0.7 - Porcentagem) / 0.7, 0, 1)
+
+	CameraTonturaAlvo = Alpha * Alpha
+end
+
+local function AtualizarCameraTontura(DeltaTime)
+	Camera = workspace.CurrentCamera or Camera
+
+	if not Camera
+		or not Humanoid
+		or not Humanoid.Parent
+		or Humanoid.Health <= 0 then
+
+		CameraTonturaAlvo = 0
+		CameraTonturaAtual += (0 - CameraTonturaAtual) * math.clamp(DeltaTime * 8, 0, 1)
+		return
+	end
+
+	AtualizarTonturaAlvo()
+
+	CameraTonturaAtual += (CameraTonturaAlvo - CameraTonturaAtual) * math.clamp(DeltaTime * 5, 0, 1)
+	CameraTonturaTempo += DeltaTime
+
+	if CameraTonturaAtual <= 0.001 then
+		return
+	end
+
+	local Intensidade = CameraTonturaAtual
+
+	local FrequenciaX = 2.4 + Intensidade * 2.2
+	local FrequenciaY = 3.1 + Intensidade * 2.8
+	local FrequenciaRoll = 1.8 + Intensidade * 2
+
+	local MovimentoX = math.sin(CameraTonturaTempo * FrequenciaX) * 0.035 * Intensidade
+	local MovimentoY = math.sin(CameraTonturaTempo * FrequenciaY + 1.7) * 0.025 * Intensidade
+	local Roll = math.sin(CameraTonturaTempo * FrequenciaRoll + 0.8) * math.rad(2.2) * Intensidade
+
+	Camera.CFrame =
+		Camera.CFrame
+		* CFrame.new(MovimentoX, MovimentoY, 0)
+		* CFrame.Angles(0, 0, Roll)
+end
+
+local function CriarHUD()
+	local PlayerGui = Player:FindFirstChildOfClass("PlayerGui")
+
+	if not PlayerGui then
+		PlayerGui = Player:WaitForChild("PlayerGui", 10)
+	end
+
+	if not PlayerGui then
+		return false
+	end
+
+	local NovoHUD = PlayerGui:FindFirstChild("StatusHUD")
+
+	if not NovoHUD then
+		NovoHUD = PlayerGui:WaitForChild("StatusHUD", 10)
+	end
+
+	if not NovoHUD then
+		return false
+	end
+
+	local NovoContainer = NovoHUD:FindFirstChild("Container")
+
+	if not NovoContainer then
+		NovoContainer = NovoHUD:WaitForChild("Container", 5)
+	end
+
+	if not NovoContainer then
+		return false
+	end
+
+	local Vida = NovoContainer:FindFirstChild("Vida")
+	local Energia = NovoContainer:FindFirstChild("Energia")
+
+	if not Vida or not Energia then
+		return false
+	end
+
+	local VidaFundo = Vida:FindFirstChild("Fundo")
+	local EnergiaFundo = Energia:FindFirstChild("Fundo")
+
+	if not VidaFundo or not EnergiaFundo then
+		return false
+	end
+
+	local NovaVidaBar = VidaFundo:FindFirstChild("Barra")
+	local NovaVidaGlow = VidaFundo:FindFirstChild("Glow")
+	local NovaVidaTexto = Vida:FindFirstChild("Texto")
+
+	local NovaStaminaBar = EnergiaFundo:FindFirstChild("Barra")
+	local NovaStaminaGlow = EnergiaFundo:FindFirstChild("Glow")
+	local NovaStaminaTexto = Energia:FindFirstChild("Texto")
+
+	if not NovaVidaBar
+		or not NovaVidaGlow
+		or not NovaVidaTexto
+		or not NovaStaminaBar
+		or not NovaStaminaGlow
+		or not NovaStaminaTexto then
+		return false
+	end
+
+	local NovaVidaScale = NovaVidaBar:FindFirstChild("BarraScale")
+	local NovaStaminaScale = NovaStaminaBar:FindFirstChild("BarraScale")
+
+	HUD = NovoHUD
+	Container = NovoContainer
+
+	VidaBar = NovaVidaBar
+	VidaGlow = NovaVidaGlow
+	VidaTexto = NovaVidaTexto
+	VidaScale = NovaVidaScale
+
+	StaminaBar = NovaStaminaBar
+	StaminaGlow = NovaStaminaGlow
+	StaminaTexto = NovaStaminaTexto
+	StaminaScale = NovaStaminaScale
+
+	HUDGeneration += 1
+	LimparTweens()
+
+	HUD.Enabled = false
+
+	return true
+end
+
+local function AnimacaoImpacto(BarraScale, Tipo)
+	if not BarraScale or not BarraScale.Parent then
+		return
+	end
+
+	local Generation = HUDGeneration
+
+	if Tipo == "Vida" then
+		VidaImpactTween = DestruirTween(VidaImpactTween)
+
+		VidaImpactTween = TweenService:Create(
+			BarraScale,
+			TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{Scale = 1.035}
+		)
+
+		VidaImpactTween:Play()
+
+		task.delay(0.1, function()
+			if Generation ~= HUDGeneration then
+				return
+			end
+
+			if not BarraScale or not BarraScale.Parent then
+				return
+			end
+
+			VidaImpactTween = DestruirTween(VidaImpactTween)
+
+			VidaImpactTween = TweenService:Create(
+				BarraScale,
+				TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{Scale = 1}
+			)
+
+			VidaImpactTween:Play()
+		end)
+	else
+		StaminaImpactTween = DestruirTween(StaminaImpactTween)
+
+		StaminaImpactTween = TweenService:Create(
+			BarraScale,
+			TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{Scale = 1.035}
+		)
+
+		StaminaImpactTween:Play()
+
+		task.delay(0.1, function()
+			if Generation ~= HUDGeneration then
+				return
+			end
+
+			if not BarraScale or not BarraScale.Parent then
+				return
+			end
+
+			StaminaImpactTween = DestruirTween(StaminaImpactTween)
+
+			StaminaImpactTween = TweenService:Create(
+				BarraScale,
+				TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{Scale = 1}
+			)
+
+			StaminaImpactTween:Play()
+		end)
+	end
+end
+
+local function AnimacaoIcone(Icone, Tamanho, Tipo)
+	if not Icone or not Icone.Parent then
+		return
+	end
+
+	local Generation = HUDGeneration
+
+	if Tipo == "Vida" then
+		VidaIconTween = DestruirTween(VidaIconTween)
+
+		VidaIconTween = TweenService:Create(
+			Icone,
+			TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{TextSize = Tamanho + 6}
+		)
+
+		VidaIconTween:Play()
+
+		task.delay(0.12, function()
+			if Generation ~= HUDGeneration then
+				return
+			end
+
+			if not Icone or not Icone.Parent then
+				return
+			end
+
+			VidaIconTween = DestruirTween(VidaIconTween)
+
+			VidaIconTween = TweenService:Create(
+				Icone,
+				TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{TextSize = Tamanho}
+			)
+
+			VidaIconTween:Play()
+		end)
+	else
+		StaminaIconTween = DestruirTween(StaminaIconTween)
+
+		StaminaIconTween = TweenService:Create(
+			Icone,
+			TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+			{TextSize = Tamanho + 5}
+		)
+
+		StaminaIconTween:Play()
+
+		task.delay(0.12, function()
+			if Generation ~= HUDGeneration then
+				return
+			end
+
+			if not Icone or not Icone.Parent then
+				return
+			end
+
+			StaminaIconTween = DestruirTween(StaminaIconTween)
+
+			StaminaIconTween = TweenService:Create(
+				Icone,
+				TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{TextSize = Tamanho}
+			)
+
+			StaminaIconTween:Play()
+		end)
+	end
+end
+
+local function AtualizarVidaUI()
+	if not Humanoid
+		or Humanoid.Health < 0
+		or not VidaBar
+		or not VidaTexto
+		or not VidaGlow
+		or not VidaBar.Parent then
+		return
+	end
+
+	local MaxHealth = Humanoid.MaxHealth
+
+	if MaxHealth <= 0 then
+		return
+	end
+
+	local Porcentagem = math.clamp(Humanoid.Health / MaxHealth, 0, 1)
+	local Percentual = math.floor(Porcentagem * 100 + 0.5)
+
+	VidaTexto.Text = Percentual .. "%"
+
+	local Linha = VidaBar.Parent.Parent
+	local Icone = Linha and Linha:FindFirstChild("Icone")
+
+	if Porcentagem <= 0.2 then
+		VidaTexto.TextColor3 = Color3.fromRGB(255, 95, 95)
+
+		if Icone then
+			Icone.TextColor3 = Color3.fromRGB(255, 70, 70)
+		end
+	elseif Porcentagem <= 0.5 then
+		VidaTexto.TextColor3 = Color3.fromRGB(255, 185, 80)
+
+		if Icone then
+			Icone.TextColor3 = Color3.fromRGB(255, 130, 65)
+		end
+	else
+		VidaTexto.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+		if Icone then
+			Icone.TextColor3 = Color3.fromRGB(255, 70, 82)
+		end
+	end
+
+	VidaTween = DestruirTween(VidaTween)
+	VidaGlowTween = DestruirTween(VidaGlowTween)
+
+	VidaBar.Size = UDim2.new(Porcentagem, 0, 1, 0)
+
+	VidaGlowTween = TweenService:Create(
+		VidaGlow,
+		TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{Position = UDim2.new(Porcentagem, -2, 0.5, 0)}
+	)
+
+	VidaGlowTween:Play()
+
+	if math.abs(Porcentagem - UltimaVida) > 0.05 then
+		AnimacaoImpacto(VidaScale, "Vida")
+	end
+
+	local AgoraBaixa = Porcentagem <= 0.2
+
+	if AgoraBaixa and not VidaBaixa and Icone then
+		AnimacaoIcone(Icone, Icone.TextSize, "Vida")
+	end
+
+	VidaBaixa = AgoraBaixa
+	UltimaVida = Porcentagem
+end
+
+local function AtualizarVelocidade()
+	if not Character
+		or not Character.Parent
+		or not Humanoid
+		or Humanoid.Health <= 0 then
+		return
+	end
+
+	if Character:GetAttribute("Batendo") or Humanoid.Sit then
+		Correndo = false
+		Humanoid.WalkSpeed = AgachadoSpeed
+		return
+	end
+
+	if Player:GetAttribute("Vestindo") == true then
+		Correndo = false
+		Humanoid.WalkSpeed = NormalSpeed
+		return
+	end
+
+	if Agachado then
+		if Correndo then
+			Humanoid.WalkSpeed = AgachadoCorridaSpeed
+		else
+			Humanoid.WalkSpeed = AgachadoSpeed
+		end
+		return
+	end
+
+	if Ferido then
+		if Correndo then
+			Humanoid.WalkSpeed = FeridoCorridaSpeed
+		else
+			Humanoid.WalkSpeed = FeridoSpeed
+		end
+
+		return
+	end
+
+	if Correndo then
+		Humanoid.WalkSpeed = CorridaSpeed
+	else
+		Humanoid.WalkSpeed = NormalSpeed
+	end
+end
+
+local function PararAnimacaoFerido()
+	if FeridoIdleTrack then
+		pcall(function()
+			FeridoIdleTrack:AdjustWeight(0, 0.1)
+			FeridoIdleTrack:Stop(0.1)
+		end)
+
+		pcall(function()
+			FeridoIdleTrack:Destroy()
+		end)
+
+		FeridoIdleTrack = nil
+	end
+end
+
+local function CriarAnimacaoFerido()
+	if not Animator
+		or not Animator.Parent
+		or not Humanoid
+		or not Humanoid.Parent
+		or Humanoid.Health <= 0 then
+		return false
+	end
+
+	if FeridoIdleTrack and FeridoIdleTrack.Parent then
+		return true
+	end
+
+	PararAnimacaoFerido()
+
+	local Animation = Instance.new("Animation")
+	Animation.AnimationId = "rbxassetid://" .. FERIDO_IDLE_ANIMATION_ID
+
+	local Sucesso, Resultado = pcall(function()
+		return Animator:LoadAnimation(Animation)
+	end)
+
+	Animation:Destroy()
+
+	if not Sucesso or not Resultado then
+		return false
+	end
+
+	FeridoIdleTrack = Resultado
+	FeridoIdleTrack.Looped = true
+	FeridoIdleTrack.Priority = Enum.AnimationPriority.Movement
+
+	return true
+end
+
+local function AtualizarAnimacaoFerido()
+	if Agachado then
+		PararAnimacaoFerido()
+		return
+	end
+
+	if not Ferido
+		or not Humanoid
+		or not Humanoid.Parent
+		or Humanoid.Health <= 0 then
+
+		PararAnimacaoFerido()
+		return
+	end
+
+	if Humanoid.Sit then
+		PararAnimacaoFerido()
+		return
+	end
+
+	if Character and Character:GetAttribute("Batendo") then
+		PararAnimacaoFerido()
+		return
+	end
+
+	local Movendo = Humanoid.MoveDirection.Magnitude > 0.05
+
+	if Movendo then
+		if FeridoIdleTrack and FeridoIdleTrack.IsPlaying then
+			FeridoIdleTrack:Stop(0.12)
+		end
+
+		return
+	end
+
+	if not FeridoIdleTrack or not FeridoIdleTrack.Parent then
+		if not CriarAnimacaoFerido() then
+			return
+		end
+	end
+
+	if not FeridoIdleTrack then
+		return
+	end
+
+	if not FeridoIdleTrack.IsPlaying then
+		FeridoIdleTrack:Play(0.2, 1, 1)
+	else
+		FeridoIdleTrack:AdjustSpeed(1)
+	end
+end
+
+local function AtualizarFerimento()
+	if not Humanoid or not Humanoid.Parent or Humanoid.MaxHealth <= 0 then
+		return
+	end
+
+	local Porcentagem = math.clamp(Humanoid.Health / Humanoid.MaxHealth, 0, 1)
+	local FeridoAnterior = Ferido
+
+	if not Ferido and Porcentagem <= FeridoAtivaPorcentagem then
+		Ferido = true
+	elseif Ferido and Porcentagem >= FeridoRecuperaPorcentagem then
+		Ferido = false
+	end
+
+	AtualizarVelocidade()
+	AtualizarBlurFerimento(false)
+	AtualizarTonturaAlvo()
+
+	if Ferido ~= FeridoAnterior then
+		if Ferido then
+			AtualizarAnimacaoFerido()
+		else
+			PararAnimacaoFerido()
+		end
+	else
+		AtualizarAnimacaoFerido()
+	end
+end
+
+local function AtualizarStaminaUI(Instantaneo)
+	if not StaminaBar
+		or not StaminaTexto
+		or not StaminaGlow
+		or not StaminaBar.Parent then
+		return
+	end
+
+	local Porcentagem = math.clamp(Stamina / MaxStamina, 0, 1)
+	local Percentual = math.floor(Porcentagem * 100 + 0.5)
+
+	StaminaTexto.Text = Percentual .. "%"
+
+	local Linha = StaminaBar.Parent.Parent
+	local Icone = Linha and Linha:FindFirstChild("Icone")
+	local Gradient = StaminaBar:FindFirstChildOfClass("UIGradient")
+
+	if Porcentagem <= 0.2 then
+		StaminaTexto.TextColor3 = Color3.fromRGB(255, 100, 100)
+
+		if Icone then
+			Icone.TextColor3 = Color3.fromRGB(255, 90, 70)
+		end
+
+		if Gradient then
+			Gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 105, 85)),
+				ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 70, 70)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(205, 45, 45))
+			})
+		end
+	else
+		StaminaTexto.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+		if Icone then
+			Icone.TextColor3 = Color3.fromRGB(255, 204, 55)
+		end
+
+		if Gradient then
+			Gradient.Color = ColorSequence.new({
+				ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 225, 77)),
+				ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 198, 45)),
+				ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 165, 35))
+			})
+		end
+	end
+
+	if Instantaneo then
+		StaminaTween = DestruirTween(StaminaTween)
+		StaminaBar.Size = UDim2.new(Porcentagem, 0, 1, 0)
+	else
+		StaminaTween = DestruirTween(StaminaTween)
+
+		StaminaTween = TweenService:Create(
+			StaminaBar,
+			TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{Size = UDim2.new(Porcentagem, 0, 1, 0)}
+		)
+
+		StaminaTween:Play()
+	end
+
+	StaminaGlowTween = DestruirTween(StaminaGlowTween)
+
+	StaminaGlowTween = TweenService:Create(
+		StaminaGlow,
+		TweenInfo.new(0.12, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+		{Position = UDim2.new(Porcentagem, -2, 0.5, 0)}
+	)
+
+	StaminaGlowTween:Play()
+
+	if math.abs(Porcentagem - UltimaStamina) > 0.08 then
+		AnimacaoImpacto(StaminaScale, "Stamina")
+	end
+
+	local AgoraBaixa = Porcentagem <= 0.2
+
+	if AgoraBaixa and not StaminaBaixa and Icone then
+		AnimacaoIcone(Icone, Icone.TextSize, "Stamina")
+	end
+
+	StaminaBaixa = AgoraBaixa
+	UltimaStamina = Porcentagem
+end
+
+local function MostrarHUD()
+	if not HUD or not HUD.Parent then
+		if not CriarHUD() then
+			return
+		end
+	end
+
+	if not HUD then
+		return
+	end
+
+	HUD.Enabled = true
+
+	if Container and Container.Parent then
+		local Scale = Container:FindFirstChildOfClass("UIScale")
+
+		if Scale then
+			HUDScaleTween = DestruirTween(HUDScaleTween)
+
+			Scale.Scale = 0.82
+
+			HUDScaleTween = TweenService:Create(
+				Scale,
+				TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+				{Scale = 1}
+			)
+
+			HUDScaleTween:Play()
+		end
+
+		HUDBackgroundTween = DestruirTween(HUDBackgroundTween)
+	end
+end
+
+local function EsconderHUD()
+	if HUD then
+		HUD.Enabled = false
+	end
+end
+
+local function TemToolEquipado()
+	if not Character or not Character.Parent then
+		return false
+	end
+
+	return Character:FindFirstChildOfClass("Tool") ~= nil
+end
+
+local function AtualizarAnimacao()
+	if Agachado
+		and Humanoid
+		and Humanoid.Parent
+		and Humanoid.Health > 0 then
+
+		PararAnimacaoFerido()
+
+		if Character and Character:GetAttribute("Batendo") then
+			if AgachadoIdleTrack and AgachadoIdleTrack.IsPlaying then
+				AgachadoIdleTrack:AdjustSpeed(0)
+			end
+
+			if AgachadoWalkTrack and AgachadoWalkTrack.IsPlaying then
+				AgachadoWalkTrack:AdjustSpeed(0)
+			end
+
+			return
+		end
+
+		local Movendo = Humanoid.MoveDirection.Magnitude > 0.05
+
+		if Movendo then
+			if AgachadoIdleTrack and AgachadoIdleTrack.IsPlaying then
+				AgachadoIdleTrack:Stop(0.12)
+			end
+
+			if AgachadoWalkTrack and not AgachadoWalkTrack.IsPlaying then
+				AgachadoWalkTrack:Play(0.12, 1, 1)
+			end
+
+			if AgachadoWalkTrack then
+				if Correndo then
+					AgachadoWalkTrack:AdjustSpeed(AgachadoCorridaAnimSpeed)
+				else
+					AgachadoWalkTrack:AdjustSpeed(1)
+				end
+			end
+		else
+			if AgachadoWalkTrack and AgachadoWalkTrack.IsPlaying then
+				AgachadoWalkTrack:Stop(0.12)
+			end
+
+			if AgachadoIdleTrack and not AgachadoIdleTrack.IsPlaying then
+				AgachadoIdleTrack:Play(0.12, 1, 1)
+			end
+
+			if AgachadoIdleTrack then
+				AgachadoIdleTrack:AdjustSpeed(1)
+			end
+		end
+
+		return
+	end
+
+	AtualizarAnimacaoFerido()
+end
+
+local function PararAnimacao()
+	if AgachadoIdleTrack then
+		pcall(function()
+			AgachadoIdleTrack:AdjustSpeed(0)
+			AgachadoIdleTrack:Stop(0.15)
+		end)
+
+		pcall(function()
+			AgachadoIdleTrack:Destroy()
+		end)
+
+		AgachadoIdleTrack = nil
+	end
+
+	if AgachadoWalkTrack then
+		pcall(function()
+			AgachadoWalkTrack:AdjustSpeed(0)
+			AgachadoWalkTrack:Stop(0.15)
+		end)
+
+		pcall(function()
+			AgachadoWalkTrack:Destroy()
+		end)
+
+		AgachadoWalkTrack = nil
+	end
+
+	PararAnimacaoFerido()
+end
+
+local function Desativar()
+	Agachado = false
+	Correndo = false
+	MobileCorrendo = false
+
+	if Character and Character.Parent then
+		Character:SetAttribute("Agachado", false)
+	end
+
+	if Humanoid and Humanoid.Parent then
+		if Humanoid.Sit then
+			Humanoid.AutoRotate = false
+		else
+			Humanoid.AutoRotate = true
+		end
+
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+		Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
+	end
+
+	PararAnimacao()
+	AtualizarVelocidade()
+	AtualizarAnimacaoFerido()
+end
+
+local function CriarAnimacao()
+	if not Humanoid
+		or not Humanoid.Parent
+		or Humanoid.Health <= 0 then
+		return false
+	end
+
+	Animator = Humanoid:FindFirstChildOfClass("Animator")
+
+	if not Animator then
+		Animator = Instance.new("Animator")
+		Animator.Parent = Humanoid
+	end
+
+	if AgachadoIdleTrack or AgachadoWalkTrack then
+		PararAnimacao()
+	end
+
+	local IdleAnimation = Instance.new("Animation")
+	IdleAnimation.AnimationId = "rbxassetid://" .. AGACHADO_IDLE_ANIMATION_ID
+
+	local WalkAnimation = Instance.new("Animation")
+	WalkAnimation.AnimationId = "rbxassetid://" .. AGACHADO_WALK_ANIMATION_ID
+
+	local SucessoIdle, ResultadoIdle = pcall(function()
+		return Animator:LoadAnimation(IdleAnimation)
+	end)
+
+	local SucessoWalk, ResultadoWalk = pcall(function()
+		return Animator:LoadAnimation(WalkAnimation)
+	end)
+
+	IdleAnimation:Destroy()
+	WalkAnimation:Destroy()
+
+	if not SucessoIdle
+		or not ResultadoIdle
+		or not SucessoWalk
+		or not ResultadoWalk then
+
+		if ResultadoIdle then
+			pcall(function()
+				ResultadoIdle:Destroy()
+			end)
+		end
+
+		if ResultadoWalk then
+			pcall(function()
+				ResultadoWalk:Destroy()
+			end)
+		end
+
+		return false
+	end
+
+	AgachadoIdleTrack = ResultadoIdle
+	AgachadoIdleTrack.Looped = true
+	AgachadoIdleTrack.Priority = Enum.AnimationPriority.Action
+
+	AgachadoWalkTrack = ResultadoWalk
+	AgachadoWalkTrack.Looped = true
+	AgachadoWalkTrack.Priority = Enum.AnimationPriority.Action
+
+	return true
+end
+
+local function Ativar()
+	if Player:GetAttribute("Vestindo") == true then
+		return
+	end
+
+	if Agachado then
+		Desativar()
+		return
+	end
+
+	if not Character
+		or Character ~= Player.Character
+		or not Character.Parent then
+		return
+	end
+
+	if not Humanoid
+		or not Humanoid.Parent
+		or Humanoid.Health <= 0 then
+		return
+	end
+
+	if Humanoid.Sit then
+		return
+	end
+
+	if UserInputService:GetFocusedTextBox() then
+		return
+	end
+
+	Correndo = false
+	MobileCorrendo = false
+	ShiftPressionado = false
+
+	if not CriarAnimacao() then
+		return
+	end
+
+	Agachado = true
+
+	Character:SetAttribute("Agachado", true)
+
+	Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+	Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+	Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, false)
+
+	Humanoid.WalkSpeed = AgachadoSpeed
+
+	PararAnimacaoFerido()
+
+	if AgachadoIdleTrack then
+		AgachadoIdleTrack:Play(0.15, 1, 1)
+	end
+
+	task.defer(function()
+		if Agachado
+			and Character
+			and Character.Parent
+			and Humanoid
+			and Humanoid.Health > 0
+			and Player:GetAttribute("Vestindo") ~= true then
+
+			AtualizarAnimacao()
+		end
+	end)
+end
+
+local function EstaTentandoCorrer()
+	if Player:GetAttribute("Vestindo") == true then
+		return false
+	end
+
+	return ShiftPressionado or MobileCorrendo
+end
+
+local function AtualizarCorrida(DeltaTime)
+	if not Humanoid
+		or not Humanoid.Parent
+		or not Character
+		or not Character.Parent
+		or Humanoid.Health <= 0 then
+		return
+	end
+
+	if Player:GetAttribute("Vestindo") == true then
+		Correndo = false
+		MobileCorrendo = false
+
+		Stamina += StaminaRecuperacao * DeltaTime
+		Stamina = math.clamp(Stamina, 0, MaxStamina)
+
+		AtualizarVelocidade()
+		AtualizarStaminaUI(false)
+
+		return
+	end
+
+	if Humanoid.Sit or Character:GetAttribute("Batendo") then
+		Correndo = false
+
+		AtualizarVelocidade()
+
+		Stamina += StaminaRecuperacao * DeltaTime
+		Stamina = math.clamp(Stamina, 0, MaxStamina)
+
+		AtualizarStaminaUI(false)
+
+		return
+	end
+
+	local Movendo = Humanoid.MoveDirection.Magnitude > 0.05
+	local TentandoCorrer = EstaTentandoCorrer()
+
+	if TentandoCorrer and Movendo and Stamina > 0 then
+		Correndo = true
+
+		Stamina -= StaminaGasto * DeltaTime
+		Stamina = math.clamp(Stamina, 0, MaxStamina)
+
+		if Stamina <= 0 then
+			Correndo = false
+		end
+	else
+		Correndo = false
+
+		if not Movendo or not TentandoCorrer then
+			Stamina += StaminaRecuperacao * DeltaTime
+			Stamina = math.clamp(Stamina, 0, MaxStamina)
+		end
+	end
+
+	AtualizarVelocidade()
+	AtualizarAnimacao()
+	AtualizarStaminaUI(false)
+end
+
+local function SempreOn(Gui)
+	if not Gui then
+		return
+	end
+
+	local JumpButton = Gui:FindFirstChild("JumpButton", true)
+
+	local function Atualizar()
+		if Gui.Parent then
+			Gui.Enabled = true
+		end
+
+		if JumpButton and JumpButton.Parent then
+			JumpButton.Visible = true
+		end
+	end
+
+	Atualizar()
+
+	Gui:GetPropertyChangedSignal("Enabled"):Connect(function()
+		if Gui.Parent and not Gui.Enabled then
+			Gui.Enabled = true
+		end
+	end)
+
+	if JumpButton then
+		JumpButton:GetPropertyChangedSignal("Visible"):Connect(function()
+			if JumpButton.Parent and not JumpButton.Visible then
+				JumpButton.Visible = true
+			end
+		end)
+	end
+end
+
+local function ConfigurarMobile()
+	if MobileConfigurado then
+		return
+	end
+
+	local PlayerGui = Player:WaitForChild("PlayerGui", 10)
+
+	if not PlayerGui then
+		return
+	end
+
+	local Screen = PlayerGui:FindFirstChild("ScreenGui")
+
+	if not Screen then
+		Screen = PlayerGui:WaitForChild("ScreenGui", 5)
+	end
+
+	local TemTouch = PlayerGui:FindFirstChild("TouchGui")
+
+	if not TemTouch then
+		TemTouch = PlayerGui:WaitForChild("TouchGui", 3)
+	end
+
+	if not TemTouch then
+		return
+	end
+
+	MobileConfigurado = true
+
+	SempreOn(TemTouch)
+
+	if Screen then
+		local TextLabel = Screen:FindFirstChild("TextLabel")
+
+		if TextLabel then
+			TextLabel.Visible = false
+		end
+	end
+
+	Module:UnbindAction("Correr")
+	Module:UnbindAction("Agachar")
+
+	Module:BindAction("Correr", function(_, InputState)
+		if Player:GetAttribute("Vestindo") == true then
+			MobileCorrendo = false
+			return
+		end
+
+		if InputState == Enum.UserInputState.Begin then
+			MobileCorrendo = true
+		elseif InputState == Enum.UserInputState.End
+			or InputState == Enum.UserInputState.Cancel then
+
+			MobileCorrendo = false
+		end
+	end, true, Enum.KeyCode.LeftShift)
+
+	Module:SetTitle("Correr", "Correr")
+
+	Module:BindAction("Agachar", function(_, InputState)
+		if Player:GetAttribute("Vestindo") == true then
+			return
+		end
+
+		if InputState == Enum.UserInputState.Begin then
+			Ativar()
+		end
+	end, true, Enum.KeyCode.LeftControl)
+
+	Module:SetTitle("Agachar", "Agachar")
+end
+
+local function ConfigurarCamera()
+	if not Humanoid or not Humanoid.Parent then
+		return
+	end
+
+	Camera = workspace.CurrentCamera or Camera
+
+	if not Camera then
+		return
+	end
+
+	Camera.CameraType = Enum.CameraType.Custom
+	Camera.CameraSubject = Humanoid
+
+	Player.CameraMode = Enum.CameraMode.Classic
+	Player.CameraMinZoomDistance = 6.5
+	Player.CameraMaxZoomDistance = 8.5
+
+	Humanoid.CameraOffset = Vector3.new(1.25, 0.8, 0)
+
+	CriarBlur()
+	AtualizarBlurFerimento(true)
+	AtualizarTonturaAlvo()
+	AtualizarMouse()
+end
+
+local function DesconectarCharacter()
+	Desconectar(DeathConnection)
+	Desconectar(MoveConnection)
+	Desconectar(BatendoConnection)
+	Desconectar(StateConnection)
+	Desconectar(SitConnection)
+	Desconectar(HealthConnection)
+	Desconectar(MaxHealthConnection)
+
+	DeathConnection = nil
+	MoveConnection = nil
+	BatendoConnection = nil
+	StateConnection = nil
+	SitConnection = nil
+	HealthConnection = nil
+	MaxHealthConnection = nil
+end
+
+local function PrepararCharacter(NovoCharacter)
+	CharacterGeneration += 1
+
+	local MinhaGeneration = CharacterGeneration
+
+	DesconectarCharacter()
+
+	Agachado = false
+	Correndo = false
+	ShiftPressionado = false
+	MobileCorrendo = false
+	Ferido = false
+	RotacaoSentado = nil
+	EstavaSentado = false
+	CameraTonturaAtual = 0
+	CameraTonturaAlvo = 0
+	CameraTonturaTempo = 0
+
+	PararAnimacao()
+	EsconderHUD()
+	RemoverBlur()
+
+	Character = NovoCharacter
+	Humanoid = nil
+	Animator = nil
+	Root = nil
+
+	if not Character or not Character.Parent then
+		return
+	end
+
+	Humanoid = Character:WaitForChild("Humanoid", 10)
+	Root = Character:WaitForChild("HumanoidRootPart", 10)
+
+	if MinhaGeneration ~= CharacterGeneration then
+		return
+	end
+
+	if not Humanoid or not Root then
+		return
+	end
+
+	Animator = Humanoid:FindFirstChildOfClass("Animator")
+
+	if not Animator then
+		Animator = Instance.new("Animator")
+		Animator.Parent = Humanoid
+	end
+
+	Character:SetAttribute("Agachado", false)
+
+	Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+	Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+	Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
+
+	Humanoid.AutoRotate = true
+	Humanoid.WalkSpeed = NormalSpeed
+
+	Stamina = MaxStamina
+
+	UltimaVida = 1
+	UltimaStamina = 1
+	VidaBaixa = false
+	StaminaBaixa = false
+	Ferido = false
+	
+	task.delay(5, function()
+		if not HUD or not HUD.Parent then
+			CriarHUD()
+		end
+
+		MostrarHUD()
+		AtualizarVidaUI()
+		AtualizarStaminaUI(true)
+	end)
+
+	ConfigurarCamera()
+	CriarBlur()
+	AtualizarBlurFerimento(true)
+	AtualizarTonturaAlvo()
+
+	SitConnection = Humanoid:GetPropertyChangedSignal("Sit"):Connect(function()
+		if MinhaGeneration ~= CharacterGeneration then
+			return
+		end
+
+		if not Humanoid
+			or not Humanoid.Parent
+			or not Root
+			or Humanoid.Health <= 0 then
+			return
+		end
+
+		if Humanoid.Sit then
+			EstavaSentado = true
+			Humanoid.AutoRotate = false
+
+			local _, Y, _ = Root.CFrame:ToOrientation()
+			RotacaoSentado = Y
+
+			Correndo = false
+			MobileCorrendo = false
+
+			AtualizarVelocidade()
+			AtualizarAnimacaoFerido()
+		else
+			EstavaSentado = false
+			RotacaoSentado = nil
+			Humanoid.AutoRotate = true
+
+			AtualizarVelocidade()
+			AtualizarAnimacaoFerido()
+		end
+	end)
+
+	StateConnection = Humanoid.StateChanged:Connect(function(_, NovoEstado)
+		if MinhaGeneration ~= CharacterGeneration then
+			return
+		end
+
+		if not Humanoid
+			or not Humanoid.Parent
+			or Humanoid.Health <= 0 then
+			return
+		end
+
+		if NovoEstado == Enum.HumanoidStateType.Seated then
+			Humanoid.AutoRotate = false
+
+			if Root and Root.Parent then
+				local _, Y, _ = Root.CFrame:ToOrientation()
+				RotacaoSentado = Y
+			end
+
+			EstavaSentado = true
+			Correndo = false
+			MobileCorrendo = false
+
+			AtualizarVelocidade()
+			AtualizarAnimacaoFerido()
+
+			return
+		end
+
+		if EstavaSentado and NovoEstado ~= Enum.HumanoidStateType.Seated then
+			EstavaSentado = false
+			RotacaoSentado = nil
+			Humanoid.AutoRotate = true
+
+			AtualizarVelocidade()
+			AtualizarAnimacaoFerido()
+		end
+
+		if not Agachado then
+			return
+		end
+
+		if NovoEstado == Enum.HumanoidStateType.Jumping
+			or NovoEstado == Enum.HumanoidStateType.Freefall
+			or NovoEstado == Enum.HumanoidStateType.FallingDown then
+
+			Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+		end
+	end)
+
+	MoveConnection = Humanoid:GetPropertyChangedSignal("MoveDirection"):Connect(function()
+		if MinhaGeneration ~= CharacterGeneration then
+			return
+		end
+
+		AtualizarAnimacao()
+		AtualizarAnimacaoFerido()
+	end)
+
+	HealthConnection = Humanoid.HealthChanged:Connect(function()
+		if MinhaGeneration ~= CharacterGeneration then
+			return
+		end
+
+		if Humanoid and Humanoid.Parent then
+			AtualizarVidaUI()
+			AtualizarFerimento()
+		end
+	end)
+
+	MaxHealthConnection = Humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(function()
+		if MinhaGeneration ~= CharacterGeneration then
+			return
+		end
+
+		if Humanoid and Humanoid.Parent then
+			AtualizarVidaUI()
+			AtualizarFerimento()
+		end
+	end)
+
+	BatendoConnection = Character:GetAttributeChangedSignal("Batendo"):Connect(function()
+		if MinhaGeneration ~= CharacterGeneration then
+			return
+		end
+
+		AtualizarAnimacao()
+		AtualizarAnimacaoFerido()
+		AtualizarVelocidade()
+	end)
+
+	DeathConnection = Humanoid.Died:Connect(function()
+		if MinhaGeneration ~= CharacterGeneration then
+			return
+		end
+
+		Agachado = false
+		Correndo = false
+		MobileCorrendo = false
+		Ferido = false
+		RotacaoSentado = nil
+		EstavaSentado = false
+		CameraTonturaAlvo = 0
+		CameraTonturaAtual = 0
+
+		if Character and Character.Parent then
+			Character:SetAttribute("Agachado", false)
+		end
+
+		PararAnimacao()
+		EsconderHUD()
+		LimparTweens()
+		RemoverBlur()
+	end)
+
+	AtualizarFerimento()
+	AtualizarVelocidade()
+	AtualizarBlurFerimento(true)
+	AtualizarTonturaAlvo()
+	AtualizarMouse()
+end
+
+UserInputService.InputBegan:Connect(function(Input, GameProcessed)
+	if GameProcessed then
+		return
+	end
+
+	if UserInputService:GetFocusedTextBox() then
+		return
+	end
+
+	if Input.KeyCode == Enum.KeyCode.LeftShift
+		or Input.KeyCode == Enum.KeyCode.RightShift then
+
+		if Player:GetAttribute("Vestindo") == true then
+			return
+		end
+
+		ShiftPressionado = true
+
+	elseif Input.KeyCode == Enum.KeyCode.LeftControl then
+		if Player:GetAttribute("Vestindo") == true then
+			return
+		end
+
+		Ativar()
+
+	elseif Input.KeyCode == Enum.KeyCode.DPadDown then
+		if Player:GetAttribute("Vestindo") == true then
+			return
+		end
+
+		Ativar()
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(Input)
+	if Input.KeyCode == Enum.KeyCode.LeftShift
+		or Input.KeyCode == Enum.KeyCode.RightShift then
+
+		ShiftPressionado = false
+	end
+end)
+
+VestindoConnection = Player:GetAttributeChangedSignal("Vestindo"):Connect(function()
+	local Vestindo = Player:GetAttribute("Vestindo")
+
+	if Vestindo == true then
+		ShiftPressionado = false
+		MobileCorrendo = false
+		Correndo = false
+
+		if Agachado then
+			Desativar()
+		else
+			PararAnimacao()
+			AtualizarVelocidade()
+			AtualizarAnimacaoFerido()
+		end
+	else
+		AtualizarVelocidade()
+		AtualizarAnimacaoFerido()
+	end
+
+	AtualizarMouse()
+end)
+
+CriarHUD()
+
+if Player.Character then
+	task.defer(function()
+		PrepararCharacter(Player.Character)
+	end)
+end
+
+Player.CharacterAdded:Connect(function(NovoCharacter)
+	PrepararCharacter(NovoCharacter)
+end)
+
+task.defer(function()
+	ConfigurarMobile()
+end)
+
+RunService:BindToRenderStep(
+	"AtualizarGameplay",
+	Enum.RenderPriority.Character.Value + 1,
+	function(DeltaTime)
+		AtualizarCorrida(DeltaTime)
+
+		AtualizarMouse()
+
+		if Character
+			and Character.Parent
+			and Humanoid
+			and Humanoid.Parent
+			and Humanoid.Health > 0 then
+
+			AtualizarAnimacao()
+		end
+
+		if not Character
+			or not Character.Parent
+			or not Humanoid
+			or not Humanoid.Parent
+			or Humanoid.Health <= 0
+			or not Root
+			or not Root.Parent then
+
+			return
+		end
+
+		if Humanoid.Sit then
+			Humanoid.AutoRotate = false
+
+			if RotacaoSentado then
+				Root.CFrame =
+					CFrame.new(Root.Position)
+					* CFrame.Angles(0, RotacaoSentado, 0)
+			end
+
+			return
+		end
+
+		if Agachado then
+			return
+		end
+
+		Humanoid.AutoRotate = true
+
+		local MoveDirection = Humanoid.MoveDirection
+
+		if MoveDirection.Magnitude > 0.05 then
+			local TargetCFrame = CFrame.lookAt(
+				Root.Position,
+				Root.Position + MoveDirection
+			)
+
+			local RotationSpeed = Correndo and 7 or 5
+			local Alpha = 1 - math.exp(-RotationSpeed * DeltaTime)
+
+			Root.CFrame = Root.CFrame:Lerp(
+				TargetCFrame,
+				Alpha
+			)
+		end
+	end
+)
+
+RunService:BindToRenderStep(
+	"EfeitoFerimentoCamera",
+	Enum.RenderPriority.Camera.Value + 1,
+	function(DeltaTime)
+		AtualizarCameraTontura(DeltaTime)
+	end
+)
+
+task.defer(function()
+	Camera = workspace.CurrentCamera or Camera
+
+	if Camera then
+		Camera.CameraType = Enum.CameraType.Custom
+		Camera.FieldOfView = 55
+	end
+
+	if Humanoid and Humanoid.Parent then
+		Camera.CameraSubject = Humanoid
+	end
+
+	Player.CameraMode = Enum.CameraMode.Classic
+	Player.CameraMinZoomDistance = 0
+	Player.CameraMaxZoomDistance = 10
+
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)
+
+	CriarBlur()
+
+	if Humanoid and Humanoid.Parent then
+		AtualizarBlurFerimento(true)
+		AtualizarTonturaAlvo()
+	end
+
+	AtualizarMouse()
+end)
